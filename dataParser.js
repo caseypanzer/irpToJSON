@@ -38,30 +38,30 @@ module.exports.processInputFiles = function () {
                 return _.trim(item.propertyId);
             });
 
+            console.log('propertyData.length ', propertyData.length);
+            console.log('financialGroupedData.length ', Object.keys(financialGroupedData).length);
             propertyData = propertyData.map(function (propertyItem) {
                 let  foreignKey = _.trim(propertyItem.propertyId);
                 if(financialGroupedData[foreignKey]){
                     let financialDataRows = financialGroupedData[foreignKey];
                     if(Array.isArray(financialDataRows)){
                         let  _financialDataGrouped = _.groupBy(financialDataRows, function (item) {
-                            let  groupedKey = [item.startDate, item.endDate].join('-');
-                            return groupedKey;
+                            return [item.startDate, item.endDate].join('##');
                         });
 
                         let groupedKeys = Object.keys(_financialDataGrouped);
                         groupedKeys = _.sortBy(groupedKeys, function (item) {
-                            return new Date(item.split('-')[0]).getTime();
+                            return new Date(item.split('##')[0]).getTime();
                         });
 
                         groupedKeys.forEach(function (keyItem) {
+                            console.log(keyItem);
                             let newFinancialItem= {
                                 lineItems : []
                             };
-                            let  splittedItem = keyItem.split('-');
-
+                            let  splittedItem = keyItem.split('##');
                             newFinancialItem.startDate = splittedItem[0];
                             newFinancialItem.endDate = splittedItem[1];
-
                             _financialDataGrouped[keyItem].forEach(function (__item) {
                                 newFinancialItem.lineItems.push(__item);
                                 if(__item.propertyId &&  !newFinancialItem.propertyId){
@@ -75,8 +75,6 @@ module.exports.processInputFiles = function () {
                             propertyItem.financials.push(_.pick(newFinancialItem, 'startDate', 'endDate', 'propertyId', 'lineItems'));
 
                         });
-
-
                     }
 
                 }
@@ -86,12 +84,9 @@ module.exports.processInputFiles = function () {
                 }
                 return  propertyItem;
             });
-
-
             let propertyGroupData = _.groupBy(propertyData,  function (item) {
                 return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
             });
-
             loanCollections = loanCollections.map(function (loanItem) {
                 let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
                 if (propertyGroupData[loanForeignKey]){
@@ -103,8 +98,10 @@ module.exports.processInputFiles = function () {
                 return  loanItem;
             });
 
+
             jsonfile.writeFileSync(path.join(__dirname,'/outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
 
+           // console.log('loanCollections size', loanCollections.length )
             resolve();
         }).catch(err => reject(err));
 
