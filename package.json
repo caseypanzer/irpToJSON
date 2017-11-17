@@ -1,0 +1,27 @@
+{
+  "name": "irptojson",
+  "version": "1.0.0",
+  "description": "Convert the IRP to JSON Format",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caseypanzer/irpToJSON.git"
+  },
+  "author": "Sajib Sarkar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/caseypanzer/irpToJSON/issues"
+  },
+  "homepage": "https://github.com/caseypanzer/irpToJSON#readme",
+  "dependencies": {
+    "fs-extra": "^4.0.2",
+    "fse": "^4.0.0",
+    "jsonfile": "^4.0.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.19.2",
+    "xlsx": "^0.11.9"
+  }
+}
