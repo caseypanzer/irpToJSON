@@ -20,13 +20,91 @@ var jsonDataKeys;
 
 module.exports.processInputFiles = function () {
     return  new Promise((resolve, reject) => {
+        var loanCollections = [];
         module.exports.parseKeyFile().then(function (jsonKeys) {
             jsonDataKeys = jsonKeys;
 //console.log('jsonDataKeys',jsonDataKeys);
             return module.exports.parseTSVFile();
-        }).then(()=>{
+        }).then((loans)=>{
+            loanCollections = loans;
             return module.exports.parsePropertyFinanceData();
-        }).then(() => {
+        }).then((propertyFinanceData) => {
+
+            let  propertyData = propertyFinanceData.property;
+            let  financialData = propertyFinanceData.financial;
+
+
+            let financialGroupedData = _.groupBy(financialData, function (item) {
+                return _.trim(item.propertyId);
+            });
+
+            propertyData = propertyData.map(function (propertyItem) {
+                let  foreignKey = _.trim(propertyItem.propertyId);
+                if(financialGroupedData[foreignKey]){
+                    let financialDataRows = financialGroupedData[foreignKey];
+                    if(Array.isArray(financialDataRows)){
+                        let  _financialDataGrouped = _.groupBy(financialDataRows, function (item) {
+                            let  groupedKey = [item.startDate, item.endDate].join('-');
+                            return groupedKey;
+                        });
+
+                        let groupedKeys = Object.keys(_financialDataGrouped);
+                        groupedKeys = _.sortBy(groupedKeys, function (item) {
+                            return new Date(item.split('-')[0]).getTime();
+                        });
+
+                        groupedKeys.forEach(function (keyItem) {
+                            let newFinancialItem= {
+                                lineItems : []
+                            };
+                            let  splittedItem = keyItem.split('-');
+
+                            newFinancialItem.startDate = splittedItem[0];
+                            newFinancialItem.endDate = splittedItem[1];
+
+                            _financialDataGrouped[keyItem].forEach(function (__item) {
+                                newFinancialItem.lineItems.push(__item);
+                                if(__item.propertyId &&  !newFinancialItem.propertyId){
+                                    newFinancialItem.propertyId = __item.propertyId;
+                                }
+                            });
+
+                            if (!propertyItem.financials){
+                                propertyItem.financials = [];
+                            }
+                            propertyItem.financials.push(_.pick(newFinancialItem, 'startDate', 'endDate', 'propertyId', 'lineItems'));
+
+                        });
+
+
+                    }
+
+                }
+
+                if (!propertyItem.financials){
+                    propertyItem.financials = [];
+                }
+                return  propertyItem;
+            });
+
+
+            let propertyGroupData = _.groupBy(propertyData,  function (item) {
+                return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
+            });
+
+            loanCollections = loanCollections.map(function (loanItem) {
+                let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
+                if (propertyGroupData[loanForeignKey]){
+                    loanItem.properties = propertyGroupData[loanForeignKey];
+                }  else {
+                    loanItem.properties = [];
+                }
+
+                return  loanItem;
+            });
+
+            jsonfile.writeFileSync(path.join(__dirname,'/outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
+
             resolve();
         }).catch(err => reject(err));
 
@@ -37,9 +115,7 @@ module.exports.processInputFiles = function () {
 
 
 module.exports.parsePropertyFinanceData= function () {
-
-    return new Promise(function (resolve, reject) {
-        return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
             let tableData = {};
             fse.ensureDirSync(__dirname+'/outputs');
             let contentPath = path.join(__dirname + '/input-files/WFCM_2016C34_RSRV.xls');
@@ -143,9 +219,6 @@ module.exports.parsePropertyFinanceData= function () {
             })
 
         });
-
-    });
-
 };
 
 
@@ -186,7 +259,7 @@ module.exports.parseTSVFile = function () {
 
                 jsonfile.writeFileSync(path.join(__dirname,'/outputs/','loanTab.json'), {  data: data}, {spaces: 4});
 
-                resolve();
+                resolve(data);
             }
         });
 
