@@ -101,7 +101,7 @@
                                             if (Array.isArray(_financial.lineItems)) {
                                                 _financial.lineItems.forEach(function (lineItem) {
                                                     var lineItemNode = {
-                                                        text: lineItem.propertyId,
+                                                        text: lineItem.categoryCode,
                                                         children: []
                                                     };
 
