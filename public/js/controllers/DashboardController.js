@@ -100,25 +100,35 @@
                                             });
 
 
+
                                             if (Array.isArray(_financial.lineItems)) {
-                                                _financial.lineItems.forEach(function (lineItem) {
+                                                let lineItemsGroup = _.groupBy(_financial.lineItems, 'categoryCode');
+
+                                                Object.keys(lineItemsGroup).forEach(function (lineItemGroupKey) {
                                                     var lineItemNode = {
-                                                        text: lineItem.categoryCode,
+                                                        text: lineItemGroupKey,
                                                         children: []
                                                     };
 
-                                                    Object.keys(lineItem).forEach(function (lineItemKey) {
-                                                        if (!Array.isArray(lineItem[lineItemKey])) {
-                                                            var innerlineItemNode = {text: [lineItemKey, lineItem[lineItemKey]].join(' : '), icon: 'none'};
-                                                            lineItemNode.children.push(innerlineItemNode);
-                                                        }
+                                                    lineItemsGroup[lineItemGroupKey].forEach(function (lineItem) {
+
+                                                        var actlineItemNode = {
+                                                            text: lineItem.stmtType,
+                                                            children: []
+                                                        };
+
+                                                        Object.keys(lineItem).forEach(function (lineItemKey) {
+                                                            if (!Array.isArray(lineItem[lineItemKey])) {
+                                                                var innerlineItemNode = {text: [lineItemKey, lineItem[lineItemKey]].join(' : '), icon: 'none'};
+                                                                actlineItemNode.children.push(innerlineItemNode);
+                                                            }
+                                                        });
+                                                        lineItemNode.children.push(actlineItemNode);
                                                     });
-
                                                     grandLineItemNode.children.push(lineItemNode);
-
                                                 });
-
                                                 financialNode.children.push(grandLineItemNode);
+
                                             }
                                             grandFinancialNode.children.push(financialNode);
 
@@ -146,8 +156,10 @@
                     //  console.log('treeData', treeData);
                    // $('#investmentTreeView').html();
                     $('#investmentTreeView').jstree({
-                        'core': {
-                            data: treeData
+                            'core': {
+                            data: { text: 'Investments',state       : {
+                                opened    : true },
+                                children: treeData}
                         }
                     });
                 }
