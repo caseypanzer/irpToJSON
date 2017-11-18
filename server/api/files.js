@@ -21,25 +21,23 @@ module.exports.upload = function (req, res, params, next) {
             serviceFile = file;
         }
     });
+
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentFileReadStream) {
             console.log('Output generated  at outputs  folder' );
-
             let outputFilePath = path.join(__dirname, '/../outputs/investments.json');
             console.log('Process Done.', outputFilePath);
             fs.createReadStream(outputFilePath).pipe(res);
-           // res.pipe();
-
             setImmediate(() =>{
-                fs.unlink(loanFile.path);
-                fs.unlink(serviceFile.path);
-            })
+                fs.unlinkSync(loanFile.path);
+                fs.unlinkSync(serviceFile.path);
+            });
         }).catch(err => {
             console.log('Error occured ',  err);
             setImmediate(() =>{
                 fs.unlinkSync(loanFile.path);
                 fs.unlinkSync(serviceFile.path);
-            })
+            });
             next(err);
         });
     } else {

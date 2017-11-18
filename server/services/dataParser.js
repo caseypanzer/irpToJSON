@@ -45,8 +45,8 @@ module.exports.processInputFiles = function (params) {
                 return _.trim(item.propertyId);
             });
 
-            console.log('propertyData.length ', propertyData.length);
-            console.log('financialGroupedData.length ', Object.keys(financialGroupedData).length);
+           // console.log('propertyData.length ', propertyData.length);
+            //console.log('financialGroupedData.length ', Object.keys(financialGroupedData).length);
             propertyData = propertyData.map(function (propertyItem) {
                 let  foreignKey = _.trim(propertyItem.propertyId);
                 if(financialGroupedData[foreignKey]){
@@ -62,7 +62,7 @@ module.exports.processInputFiles = function (params) {
                         });
 
                         groupedKeys.forEach(function (keyItem) {
-                            console.log(keyItem);
+                            //console.log(keyItem);
                             let newFinancialItem= {
                                 lineItems : []
                             };
@@ -80,7 +80,6 @@ module.exports.processInputFiles = function (params) {
                                 propertyItem.financials = [];
                             }
                             propertyItem.financials.push(_.pick(newFinancialItem, 'startDate', 'endDate', 'propertyId', 'lineItems'));
-
                         });
                     }
 
@@ -101,7 +100,6 @@ module.exports.processInputFiles = function (params) {
                 }  else {
                     loanItem.properties = [];
                 }
-
                 return  loanItem;
             });
 
@@ -330,7 +328,6 @@ module.exports.parseKeyFile = function () {
                     });
                     var dataByRowIndex = _.groupBy(formattedKeydata, 'rowIndex');
                     Object.keys(dataByRowIndex).forEach(function (rowKey) {
-                        // console.log('dataByRowIndex[rowKey]', dataByRowIndex[rowKey]);
                         var rowItems = dataByRowIndex[rowKey];
                         var rowItemsByNumericColIndex = _.keyBy(rowItems, 'colIndexNumeric');
                         var row = [];
@@ -340,7 +337,6 @@ module.exports.parseKeyFile = function () {
                             if (lastCellItem) {
                                 lastCellIndex = lastCellItem.colIndexNumeric;
                             }
-                            //console.log('firstCellIndex, lastCellIndex', firstCellIndex, lastCellIndex);
                             for (var i = 0; i <= lastCellIndex; i++) {
                                 var indStr = i.toString();
                                 if (rowItemsByNumericColIndex[indStr]) {

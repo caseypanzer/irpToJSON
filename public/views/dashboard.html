@@ -5,7 +5,8 @@
                 <div ngf-select ng-model="$ctrl.loanFile" class="drop-box"
                      ngf-drag-over-class="'dragover'" ngf-multiple="false"
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
-                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">Drop or Select Loan Setup File in .xlsx format
+                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">
+                    Drop or Select Loan Setup File in .xlsx format
 
                     <div class="text-success">{{$ctrl.loanFile.name}}</div>
                 </div>
@@ -15,28 +16,28 @@
                 <div ngf-select ng-model="$ctrl.serviceFile" class="drop-box"
                      ngf-drag-over-class="'dragover'" ngf-multiple="false"
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
-                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">Drop or Select Servicer Setup File in .xlsx format
+                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">
+                    Drop or Select Servicer Setup File in .xlsx format
 
                     <div class="text-success">{{$ctrl.serviceFile.name}}</div>
                 </div>
 
             </div>
 
-            <div class="col-perc-100" ng-if="$ctrl.loanFile && $ctrl.serviceFile">
+            <div class="col-perc-100 margin-top-10" ng-if="$ctrl.loanFile && $ctrl.serviceFile">
                 <button ng-disabled="$ctrl.sumittingFiles" class="go col-perc-100 btn btn-primary  margin-left-10"
-                        ng-click="$ctrl.uploadFiles()">  <span ng-if="!$ctrl.sumittingFiles">Convert</span><span ng-if="$ctrl.sumittingFiles">  Converting <tiny-spinner></tiny-spinner></span>
+                        ng-click="$ctrl.uploadFiles()"><span ng-if="!$ctrl.sumittingFiles">Convert</span><span
+                        ng-if="$ctrl.sumittingFiles">  Converting <tiny-spinner></tiny-spinner></span>
                 </button>
             </div>
         </form>
     </div>
 
 
-    <div class="row pull-right" ng-if="$ctrl.investments">
-            <a class="btn btn-primary  margin-left-10" target="_blank" href="/api/files/download"> Download JSON File</a>
+    <div class="row" ng-if="$ctrl.investments">
+        <a class="btn btn-primary  margin-left-10 pull-right" target="_blank" href="/api/files/download"> Download JSON File</a>
     </div>
 
-    <div class="row" id="investmentTreeView">
-
-
+    <div class="row clearfix margin-top-20" id="investmentTreeView">
     </div>
 </div>

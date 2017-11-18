@@ -20,12 +20,14 @@
         $ctrl.investments = undefined;
         $ctrl.uploadFiles = function () {
             $ctrl.sumittingFiles = true;
+            $ctrl.investments = undefined;
+            $.jstree.destroy();
             Upload.upload({
                 url: 'api/files/upload',
                 data: {loanFile: $ctrl.loanFile, serviceFile: $ctrl.serviceFile}
             }).then(function (resp) {
                 toastr.success('Files Data has been parsed successfully');
-                console.log(resp);
+               // console.log(resp);
                 if (resp && resp.data) {
                     $ctrl.investments = resp.data.Investments;
 
@@ -142,6 +144,7 @@
                     }
 
                     //  console.log('treeData', treeData);
+                   // $('#investmentTreeView').html();
                     $('#investmentTreeView').jstree({
                         'core': {
                             data: treeData
