@@ -157,9 +157,9 @@
                    // $('#investmentTreeView').html();
                     $('#investmentTreeView').jstree({
                             'core': {
-                            data: { text: 'Investments',state       : {
-                                opened    : true },
-                                children: treeData}
+                                data      : { text: 'Investments',
+                                state     : { opened    : true},
+                                children  : treeData}
                         }
                     });
                 }
