@@ -37,6 +37,9 @@ module.exports.processInputFiles = function (params) {
             return module.exports.parsePropertyFinanceData(serviceFile);
         }).then((propertyFinanceData) => {
 
+            if (propertyFinanceData){
+
+
             let  propertyData = propertyFinanceData.property;
             let  financialData = propertyFinanceData.financial;
 
@@ -58,7 +61,11 @@ module.exports.processInputFiles = function (params) {
 
                         let groupedKeys = Object.keys(_financialDataGrouped);
                         groupedKeys = _.sortBy(groupedKeys, function (item) {
-                            return new Date(item.split('##')[0]).getTime();
+                            let splittedDate = item.split('##');
+                            if(splittedDate.length  > 0){
+                                return new Date(item.split('##')[0]).getTime();
+                            }
+                            return 0;
                         });
 
                         groupedKeys.forEach(function (keyItem) {
@@ -105,9 +112,10 @@ module.exports.processInputFiles = function (params) {
 
 
             jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
-
+            }
            // console.log('loanCollections size', loanCollections.length )
             resolve(path.join(__dirname,'/../outputs/','investments.json'));
+
         }).catch(err => reject(err));
 
     });

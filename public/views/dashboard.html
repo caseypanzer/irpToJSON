@@ -5,18 +5,19 @@
                 <div ngf-select ng-model="$ctrl.loanFile" class="drop-box"
                      ngf-drag-over-class="'dragover'" ngf-multiple="false"
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
-                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">
+                     ngf-pattern="*">
                     Drop or Select Loan Setup File in .xlsx format
 
                     <div class="text-success">{{$ctrl.loanFile.name}}</div>
                 </div>
 
             </div>
+            <!--application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet-->
             <div class="col-perc-50">
                 <div ngf-select ng-model="$ctrl.serviceFile" class="drop-box"
                      ngf-drag-over-class="'dragover'" ngf-multiple="false"
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
-                     ngf-pattern="'application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'">
+                     ngf-pattern="*">
                     Drop or Select Servicer Setup File in .xlsx format
 
                     <div class="text-success">{{$ctrl.serviceFile.name}}</div>
