@@ -18,16 +18,23 @@ var dateRegexStr = /^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0
 
 var jsonDataKeys;
 
-module.exports.processInputFiles = function () {
+module.exports.processInputFiles = function (params) {
+
+
     return  new Promise((resolve, reject) => {
+
+        let  loanFile   = params.loanFile;
+        let serviceFile = params.serviceFile;
+
+
         var loanCollections = [];
         module.exports.parseKeyFile().then(function (jsonKeys) {
             jsonDataKeys = jsonKeys;
-//console.log('jsonDataKeys',jsonDataKeys);
-            return module.exports.parseTSVFile();
+
+            return module.exports.parseTSVFile(loanFile);
         }).then((loans)=>{
             loanCollections = loans;
-            return module.exports.parsePropertyFinanceData();
+            return module.exports.parsePropertyFinanceData(serviceFile);
         }).then((propertyFinanceData) => {
 
             let  propertyData = propertyFinanceData.property;
@@ -99,10 +106,10 @@ module.exports.processInputFiles = function () {
             });
 
 
-            jsonfile.writeFileSync(path.join(__dirname,'/outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
+            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
 
            // console.log('loanCollections size', loanCollections.length )
-            resolve();
+            resolve(path.join(__dirname,'/../outputs/','investments.json'));
         }).catch(err => reject(err));
 
     });
@@ -111,11 +118,11 @@ module.exports.processInputFiles = function () {
 
 
 
-module.exports.parsePropertyFinanceData= function () {
+module.exports.parsePropertyFinanceData= function (file) {
     return new Promise((resolve, reject) => {
             let tableData = {};
-            fse.ensureDirSync(__dirname+'/outputs');
-            let contentPath = path.join(__dirname + '/input-files/WFCM_2016C34_RSRV.xls');
+            fse.ensureDirSync(__dirname+'/../outputs');
+            let contentPath = path.join(__dirname ,'/../../', file.path);
             let workbook = XLSX.readFile(contentPath);
             if (workbook && Array.isArray(workbook.SheetNames)) {
                 workbook.SheetNames.forEach(function (sheetName, index) {
@@ -206,16 +213,13 @@ module.exports.parsePropertyFinanceData= function () {
                 });
             }
 
-           // console.log(tableData);
-
-            jsonfile.writeFileSync(path.join(__dirname,'/outputs/','propertyTab.json'), {  data: tableData.property}, {spaces: 4});
-            jsonfile.writeFileSync(path.join(__dirname,'/outputs/','financialTab.json'), {  data: tableData.financial}, {spaces: 4});
+            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','propertyTab.json'), {  data: tableData.property}, {spaces: 4});
+            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','financialTab.json'), {  data: tableData.financial}, {spaces: 4});
 
             setImmediate(()=>{
                 resolve(tableData);
             })
-
-        });
+    });
 };
 
 
@@ -223,44 +227,77 @@ module.exports.parsePropertyFinanceData= function () {
  * Parse the loan tab data   from tsv file
  * @returns {Promise}
  */
-module.exports.parseTSVFile = function () {
+module.exports.parseTSVFile = function (loanFile) {
 
     return   new Promise((resolve,  reject) => {
-        let contentPath = path.join(__dirname + '/input-files/WFCM_2016C34_STUP.tsv');
-        fse.ensureDirSync(__dirname+'/outputs');
-        fs.readFile(contentPath, 'utf-8', function (err, content) {
-            if(err){
-                reject(err);
-            } else {
+        let contentPath = path.join(__dirname ,'/../../', loanFile.path);
+        fse.ensureDirSync(__dirname+'/../outputs');
+        let refDataTable =  [];
+        let workbook = XLSX.readFile(contentPath);
+        if (workbook && Array.isArray(workbook.SheetNames)) {
+            workbook.SheetNames.forEach(function (sheetName, index) {
+                   var worksheet = workbook.Sheets[sheetName];
+                    if (worksheet) {
 
-                let data = [];
-                let contentLineArr = content.toString().split(/[\n\r]/);
+                        var keys = Object.keys(worksheet);
+                        var formattedKeydata = keys.map(function (item) {
+                            var cellIndex = item.replace(/[A-Z]*/gi, '');
+                            var colIndex = item.replace(/[0-9]*/gi, '');
+                            return {
+                                rowIndex        : cellIndex,
+                                colIndex        : colIndex,
+                                colIndexNumeric : getColumnAlphabetIndex(colIndex),
+                                data            : worksheet[item]
+                            };
+                        });
+                        var dataByRowIndex = _.groupBy(formattedKeydata, 'rowIndex');
+                        Object.keys(dataByRowIndex).forEach(function (rowKey) {
+                            // console.log('dataByRowIndex[rowKey]', dataByRowIndex[rowKey]);
+                            var rowItems = dataByRowIndex[rowKey];
+                            var rowItemsByNumericColIndex = _.keyBy(rowItems, 'colIndexNumeric');
+                            var row = [];
+                            if (rowKey && Array.isArray(rowItems)) {
+                                var firstCellIndex, lastCellIndex;
+                                var lastCellItem = _.last(rowItems);
+                                if (lastCellItem) {
+                                    lastCellIndex = lastCellItem.colIndexNumeric;
+                                }
+                                //console.log('firstCellIndex, lastCellIndex', firstCellIndex, lastCellIndex);
+                                for (var i = 0; i <= lastCellIndex; i++) {
+                                    var indStr = i.toString();
+                                    if (rowItemsByNumericColIndex[indStr]) {
+                                        var __val = rowItemsByNumericColIndex[indStr].data.v;
+                                        if (rowItemsByNumericColIndex[indStr].data.t === 'n') {
+                                            if (new RegExp(dateRegexStr).test(rowItemsByNumericColIndex[indStr].data.w)) {
+                                                __val = moment(new Date(( +(__val) - (25567 + 2)) * 86400 * 1000)).format('MM/DD/YYYY');
+                                            }
+                                        }
+                                        row[i] = __val;
+                                    } else {
+                                        row[i] = '';
+                                    }
 
-                contentLineArr.forEach(function (lineContent) {
+                                }
+                            }
+                            if (row.length > 0) {
+                                let rowItem= {};
 
-                    let lineContentArr = lineContent.split('\t');
-                    let rowItem = {};
-                    let colLen = lineContentArr.length;
-                    for (let i=0; i < colLen; i++) {
-                        if(jsonDataKeys.loanTab[i]){
-                            rowItem[jsonDataKeys.loanTab[i]] = lineContentArr[i];
-                        }
+                                let rowLen = row.length;
+
+                                for(let i=0; i < rowLen;i ++){
+                                    if(jsonDataKeys.loanTab[i]){
+                                        rowItem[jsonDataKeys.loanTab[i]] = row[i];
+                                    }
+                                }
+
+                                refDataTable.push(rowItem);
+                            }
+                        });
                     }
-                    data.push(rowItem);
-                   // console.log(lineContentArr.length);
-
-                });
-
-//console.log(data);
-
-
-                jsonfile.writeFileSync(path.join(__dirname,'/outputs/','loanTab.json'), {  data: data}, {spaces: 4});
-
-                resolve(data);
-            }
-        });
-
-
+            });
+        }
+        jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','loanTab.json'), {  data: refDataTable}, {spaces: 4});
+        resolve(refDataTable);
     });
 };
 
@@ -272,7 +309,7 @@ module.exports.parseTSVFile = function () {
 module.exports.parseKeyFile = function () {
     return new Promise((resolve, reject) => {
         let tableData = {};
-        let contentPath = path.join(__dirname + '/input-files/fieldNameKeyIrpApp.xlsx');
+        let contentPath = path.join(__dirname + '/../input-files/fieldNameKeyIrpApp.xlsx');
         let workbook = XLSX.readFile(contentPath);
         if (workbook && Array.isArray(workbook.SheetNames)) {
             workbook.SheetNames.forEach(function (sheetName, index) {

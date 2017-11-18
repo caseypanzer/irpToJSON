@@ -1,0 +1,42 @@
+<!doctype html>
+<html ng-app="IrpToJsonViewer">
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->  <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <base href="/">
+    <title>Irp to JSON Viewer  Application </title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/build/all.min.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/bower_components/jQuery-contextMenu/dist/jquery.contextMenu.css">
+
+    <script src="/build/vendors.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/themes/default/style.min.css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="maincontainer">
+        <div class="container-fluid" ui-view>
+        </div>
+    </div>
+
+</div>
+
+
+<!--[if lt IE 9]>
+<script src="/bower_components/es5-shim/es5-shim.js"></script>
+<script src="/bower_components/es6-shim/es6-shim.js"></script>
+<script src="/bower_components/json3/lib/json3.min.js"></script>
+<![endif]-->
+
+<script src="/build/app.js"></script>
+</body>
+</html>
