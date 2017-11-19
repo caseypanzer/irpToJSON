@@ -11,12 +11,10 @@ const XLSX = require('xlsx');
 const moment = require('moment');
 const jsonfile = require('jsonfile');
 
-
+const jsonDataKeys = require('../input-files/keyNames.json');
 
 var dateRegexStr = /^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0-2])(\/|-|\.)(?:29|30)\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:0?2(\/|-|\.)29\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\/|-|\.)(?:0?[1-9]|1\d|2[0-8])\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
 
-
-var jsonDataKeys;
 
 module.exports.processInputFiles = function (params) {
 
@@ -28,11 +26,7 @@ module.exports.processInputFiles = function (params) {
 
 
         var loanCollections = [];
-        module.exports.parseKeyFile().then(function (jsonKeys) {
-            jsonDataKeys = jsonKeys;
-
-            return module.exports.parseTSVFile(loanFile);
-        }).then((loans)=>{
+        module.exports.parseTSVFile(loanFile).then((loans)=>{
             loanCollections = loans;
             return module.exports.parsePropertyFinanceData(serviceFile);
         }).then((propertyFinanceData) => {
@@ -111,10 +105,10 @@ module.exports.processInputFiles = function (params) {
             });
 
 
-            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
+            //jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','investments.json'), {  Investments : loanCollections}, {spaces: 4});
             }
            // console.log('loanCollections size', loanCollections.length )
-            resolve(path.join(__dirname,'/../outputs/','investments.json'));
+            resolve({  Investments : loanCollections});
 
         }).catch(err => reject(err));
 
@@ -219,8 +213,8 @@ module.exports.parsePropertyFinanceData= function (file) {
                 });
             }
 
-            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','propertyTab.json'), {  data: tableData.property}, {spaces: 4});
-            jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','financialTab.json'), {  data: tableData.financial}, {spaces: 4});
+            //jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','propertyTab.json'), {  data: tableData.property}, {spaces: 4});
+          //  jsonfile.writeFileSync(path.join(__dirname,'/../outputs/','financialTab.json'), {  data: tableData.financial}, {spaces: 4});
 
             setImmediate(()=>{
                 resolve(tableData);
@@ -374,6 +368,18 @@ module.exports.parseKeyFile = function () {
     });
 };
 
+
+module.exports.parseAndStoreKeyFileAsJSON = function () {
+
+    return new Promise((resolve,  reject) => {
+        module.exports.parseKeyFile().then(function (jsonKeys) {
+            jsonDataKeys = jsonKeys;
+            jsonfile.writeFileSync(path.join(__dirname,'/../input-files/','keyNames.json'), jsonDataKeys, {spaces: 4});
+            resolve();
+        }).catch(ex => reject(ex));
+    });
+
+};
 
 function getColumnAlphabetIndex (val) {
 

@@ -23,18 +23,15 @@ module.exports.upload = function (req, res, params, next) {
     });
 
     if (loanFile && serviceFile){
-        dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentFileReadStream) {
-            console.log('Output generated  at outputs  folder' );
-            let outputFilePath = path.join(__dirname, '/../outputs/investments.json');
-            console.log('Process Done.', outputFilePath);
-            fs.createReadStream(outputFilePath).pipe(res);
+        dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentJson) {
+            res.json(investmentJson);
             setImmediate(() =>{
                 fs.unlinkSync(loanFile.path);
                 fs.unlinkSync(serviceFile.path);
             });
         }).catch(err => {
             console.log('Error occured ',  err);
-            setImmediate(() =>{
+            setImmediate(() => {
                 fs.unlinkSync(loanFile.path);
                 fs.unlinkSync(serviceFile.path);
             });

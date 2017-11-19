@@ -14,9 +14,7 @@
      */
     module.controller('DashboardController', ['$scope', '$state', 'toastr', 'DashboardService', 'Upload', function ($scope, $state, toastr, DashboardService, Upload) {
 
-
         var $ctrl = this;
-
         $ctrl.investments = undefined;
         $ctrl.uploadFiles = function () {
             $ctrl.sumittingFiles = true;
@@ -27,15 +25,10 @@
                 data: {loanFile: $ctrl.loanFile, serviceFile: $ctrl.serviceFile}
             }).then(function (resp) {
                 toastr.success('Files Data has been parsed successfully');
-               // console.log(resp);
                 if (resp && resp.data) {
                     $ctrl.investments = resp.data.Investments;
-
-
                     var treeData = [];
-
                     if (Array.isArray($ctrl.investments)) {
-
                         $ctrl.investments.forEach(function (investment, investmentIndex) {
                             let investmentNode = {
                                 text: investment.loanId,
@@ -150,11 +143,7 @@
                             treeData.push(investmentNode);
 
                         });
-
                     }
-
-                    //  console.log('treeData', treeData);
-                   // $('#investmentTreeView').html();
                     $('#investmentTreeView').jstree({
                             'core': {
                                 data      : { text: 'Investments',
@@ -173,6 +162,20 @@
             });
 
 
+        };
+
+        $ctrl.downloadJson=function () {
+            var file = new Blob([ JSON.stringify($ctrl.investments, null, 4) ], {
+                type : 'application/json'
+            });
+            var fileURL = URL.createObjectURL(file);
+            var link         = document.createElement('a');
+            link.href        = fileURL;
+            link.target      = '_blank';
+            link.download    = 'Investments.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
     }]);
