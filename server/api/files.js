@@ -7,12 +7,15 @@ var  _ = require('lodash');
 var fs = require('fs');
 var path  = require('path');
 var dataParser = require('../services/dataParser');
+var awsService = require('../services/awsService');
 
 module.exports.upload = function (req, res, params, next) {
 
-    //console.log(req);
+    debugger;
+   // console.log(typeof params);
+    //console.log(Object.keys(params));
     let loanFile, serviceFile;
-    _.forEach(req.files, function (file) {
+    /*_.forEach(req.files, function (file) {
         file  =   file[0];
         //console.log(file);
         if (file.fieldname === 'loanFile'){
@@ -21,19 +24,24 @@ module.exports.upload = function (req, res, params, next) {
             serviceFile = file;
         }
     });
+*/
+    if(params.loanFile){
+         loanFile   = decodeURIComponent(params.loanFile); //new  Buffer(params.loanFile, 'base64');
+        serviceFile = decodeURIComponent(params.serviceFile);
+    }
 
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentJson) {
             res.json(investmentJson);
-            setImmediate(() =>{
-                fs.unlinkSync(loanFile.path);
-                fs.unlinkSync(serviceFile.path);
+            setImmediate(() => {
+                loanFile.path  && fs.unlinkSync(loanFile.path);
+                serviceFile.path && fs.unlinkSync(serviceFile.path);
             });
         }).catch(err => {
-            console.log('Error occured ',  err);
+            console.log('Error occurred ',  err);
             setImmediate(() => {
-                fs.unlinkSync(loanFile.path);
-                fs.unlinkSync(serviceFile.path);
+                loanFile.path  && fs.unlinkSync(loanFile.path);
+                serviceFile.path && fs.unlinkSync(serviceFile.path);
             });
             next(err);
         });
@@ -44,6 +52,14 @@ module.exports.upload = function (req, res, params, next) {
 };
 
 
+module.exports.initiateFileUpload  =  function (req, res, params, next) {
+    console.log(params);
+
+    awsService.initiateUpload(params).then(result  =>{
+        res.json(result);
+    }).catch(err  =>  next(err));
+};
+
 
 module.exports.download = function (req, res, params, next) {
     let outputFilePath = path.join(__dirname, '/../outputs/investments.json');
@@ -52,5 +68,4 @@ module.exports.download = function (req, res, params, next) {
         let ms = Date.now();
         res.download(outputFilePath, `Investments-${ms}.json`);
     });
-
 };

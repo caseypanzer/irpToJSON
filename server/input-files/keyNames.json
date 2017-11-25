@@ -1,5 +1,5 @@
 {
-    "loanTab": [
+    "loan": [
         "transactionId",
         "groupId",
         "loanId",
@@ -96,7 +96,7 @@
         "servicingAdvanceMethodology",
         "valuationSourceAtContribution"
     ],
-    "propertyTab": [
+    "property": [
         "transactionId",
         "loanId",
         "prospectusLoanId",
@@ -197,7 +197,7 @@
         "netOperatingIncomeIndicatorAtContribution",
         "valuationSourceAtContribution"
     ],
-    "financialTab": [
+    "financial": [
         "transactionId",
         "loanId",
         "propertyId",

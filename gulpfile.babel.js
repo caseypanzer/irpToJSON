@@ -6,7 +6,20 @@
 
 'use strict';
 
-require("babel-register");
+var fs = require('fs');
+
+var babelrc = fs.readFileSync('./.babelrc');
+var config;
+
+try {
+    config = JSON.parse(babelrc);
+} catch (err) {
+    console.error('==>     ERROR: Error parsing your .babelrc.');
+    console.error(err);
+}
+
+require('babel-core/register')(config);
+//require("babel-register");
 require("babel-polyfill");
 /*
 require("babel-core");
@@ -28,7 +41,6 @@ var gulp = require('gulp'),
 
 
 function errorHandler(title) {
-
     return function (err) {
         gutil.log(gutil.colors.red('[' + title + ']'), err.toString());
         this.emit('end');
@@ -81,7 +93,7 @@ gulp.task('vendor', function () {
         .pipe(addsrc.append('public/bower_components/jQuery-contextMenu/dist/jquery.contextMenu.js'))
         .pipe(concat('vendors.min.js'))
         //.pipe(uglify())
-        //.pipe(sourcemaps.write('source-maps'))
+        .pipe(sourcemaps.write('source-maps'))
         .pipe(gulp.dest('public/build'));
 });
 
