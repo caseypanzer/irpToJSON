@@ -9,8 +9,7 @@ const moment       = require('moment');
 const excelParserService = require('./excelParserService');
 const jsonDataKeys = require('../input-files/keyNames.json');
 
-
-var financialSheetMapper = {
+const financialSheetMapper = {
     "wfcm16c34_201711_property"  :  { name : "property" },
     "wfcm16c34_201711_financial" :  { name: "financial" }
 };
@@ -41,10 +40,10 @@ module.exports.processInputFiles = function (params) {
             let propertyGroupData;
             if (Array.isArray(financialData)){
                 financialData = financialData.map(function (item) {
-                    if  (item.startDate ){
+                    if  (item.startDate && !moment.isDate(item.startDate)){
                         item.startDate = moment(item.startDate, 'YYYYMMDD').toDate();
                     }
-                    if  (item.endDate){
+                    if  (item.endDate && !moment.isDate(item.endDate)){
                         item.endDate = moment(item.endDate, 'YYYYMMDD').toDate();
                     }
                     return item;

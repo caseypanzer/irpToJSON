@@ -6,19 +6,7 @@
 
 'use strict';
 
-var fs = require('fs');
-
-var babelrc = fs.readFileSync('./.babelrc');
-var config;
-
-try {
-    config = JSON.parse(babelrc);
-} catch (err) {
-    console.error('==>     ERROR: Error parsing your .babelrc.');
-    console.error(err);
-}
-
-require('babel-core/register')(config);
+require('babel-core/register')();
 //require("babel-register");
 require("babel-polyfill");
 /*
@@ -58,7 +46,6 @@ gulp.task('css', function () {
         .pipe(addsrc.append('public/bower_components/angular-toastr/dist/angular-toastr.css'))
         .pipe(addsrc.append('public/bower_components/animate.css/animate.css'))
         .pipe(addsrc.append('public/bower_components/ionicons/css/ionicons.min.css'))
-        .pipe(addsrc.append('public/bower_components/jQuery-contextMenu/dist/jquery.contextMenu.css'))
         .pipe(addsrc.append('public/styles.css'))
         //.pipe(sourcemaps.init())
         .pipe(minifyCSS())
@@ -90,7 +77,7 @@ gulp.task('vendor', function () {
         .pipe(addsrc.append('public/bower_components/crypto-js/crypto-js.js'))
         .pipe(addsrc.append('public/bower_components/ng-file-upload/ng-file-upload-shim.js'))
         .pipe(addsrc.append('public/bower_components/ng-file-upload/ng-file-upload.js'))
-        .pipe(addsrc.append('public/bower_components/jQuery-contextMenu/dist/jquery.contextMenu.js'))
+        .pipe(sourcemaps.init())
         .pipe(concat('vendors.min.js'))
         //.pipe(uglify())
         .pipe(sourcemaps.write('source-maps'))
@@ -100,6 +87,7 @@ gulp.task('vendor', function () {
 
 gulp.task('app', function () {
     return series(gulp.src('public/js/app.js'),
+        gulp.src('public/js/constants/*'),
         gulp.src('public/js/helpers/*'),
         gulp.src('public/js/services/*'),
         gulp.src('public/js/components/*'),

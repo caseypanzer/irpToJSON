@@ -3,156 +3,91 @@
  */
 'use strict';
 
+
 //var Env = require('./ENV');
 //Env.loadEnvProperties();
 process.env.TZ = "America/New_York";
-
 const url = require('url');
-const config = require('./server/config');
-const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
-//var db = require('./server/db');
-/*
-
-if (cluster.isMaster) {
-    debugger;
-    console.log(`Master ${process.pid} is running`);
-
-    console.log('CPU length is ', numCPUs);
 
 
-    console.log('Going to start the db');
+const express = require('express'),
+    _ = require('lodash'),
+    bodyParser = require('body-parser'),
+    http = require('http'),
+    path = require('path'),
+    methodOverride = require('method-override'),
+    compress = require('compression'),
+    morgan = require('morgan'),
+    helmet = require('helmet'),
+    multer = require('multer'),
+    upload = multer({dest: "server/uploads/"});
 
-    db.initialize(function () {
+let uploadMiddleWare = upload.fields([{name: 'loanFile', maxCount: 1}, {name: 'serviceFile', maxCount: 1}]);
 
-        console.log("DB has been initialized.");
-        let userService = require('./server/services/userService');
-        userService.createDefaultUsersIfNotExists().then(() => {
-            console.log('Default users has been checked');
-            /!*cmbsFileImporter.syncAbsType().then(function () {
-                console.log('Abstype has been updated successfully');
-            }).catch(err => console.log(err));*!/
-
-            // Starting express server
-            for (let i = 0; i < numCPUs; i++) {
-                cluster.fork();
-            }
-        }).catch(err => console.log(err));
-    });
+let app = module.exports = express();
 
 
-
-    cluster.on('exit', (worker, code, signal) => {
-        console.log(`worker ${worker.process.pid} died`);
-    });
-
-    process.on('SIGINT', function (err) {
-        console.log('Process SIGINT signal found. ', err);
-        process.exit(1);
-    });
-
-    process.on('uncaughtException',  (err) => {
-        console.log('uncaughtException occurred. ', err);
-    });
-
-    process.on('unhandledRejection', (reason, p) => {
-        console.log('Process unhandledRejection has been occurred. ', reason);
-    });
-
-} else {
-    _startServer();
+if (app.get('env') === 'production') {
+    app.set('trust proxy', 1) // trust first proxy
 }
-
-*/
-
-
-_startServer();
-//Start the Express Server
-function _startServer (){
-
-    const express = require('express'),
-        bodyParser = require('body-parser'),
-        http = require('http'),
-        path = require('path'),
-        methodOverride = require('method-override'),
-        compress = require('compression'),
-        morgan = require('morgan'),
-        helmet = require('helmet'),
-        multer      = require('multer'),
-        upload      = multer({dest: "server/uploads/"});
-
-    var uploadMiddleWare = upload.fields([{ name: 'loanFile', maxCount: 1 }, { name: 'serviceFile', maxCount: 1 }]);
-
-   var _ = require('lodash');
-
-    let app = module.exports = express();
-    if (app.get('env') === 'production') {
-        app.set('trust proxy', 1) // trust first proxy
-
-    }
-    app.use(helmet());
-    app.disable('x-powered-by');
-    app.disable('X-XSS-Protection');
-    app.disable('csp');
-    app.set('port', process.env.PORT || 4444);
-    app.use(express.static(path.join(__dirname, 'public')));
-    app.use(morgan('dev'));
-    app.use(compress());
-    app.use(bodyParser.urlencoded({limit: '9999999999kb' ,type: 'application/x-www-form-urlencoded' , extended: true}));
+app.use(helmet());
+app.disable('x-powered-by');
+app.disable('X-XSS-Protection');
+app.disable('csp');
+app.set('port', process.env.PORT || 4444);
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
+app.use(compress());
+app.use(bodyParser.urlencoded({limit: '9999kb', type: 'application/x-www-form-urlencoded', extended: true}));
 //app.use(bodyParser.urlencoded({ extended: false }))
-    app.use(bodyParser.json({limit: '2000mb', type:'application/json'}));
-    app.use(methodOverride('X-HTTP-Method-Override'));
+app.use(bodyParser.json({limit: '2000mb', type: 'application/json'}));
+app.use(methodOverride('X-HTTP-Method-Override'));
 
 
-    app.post('/api/files/upload', uploadMiddleWare, function (req, res, next) {
-        _processApiRequest(req, res, 'files', 'upload', true, next);
-    });
+app.post('/api/files/upload', uploadMiddleWare, function (req, res, next) {
+    _processApiRequest(req, res, 'files', 'upload', true, next);
+});
 
-    app.get('/api/:service/', function (req, res, next) {
-        _processApiRequest(req, res, req.params.service, 'query', false, next);
-    });
+app.get('/api/:service/', function (req, res, next) {
+    _processApiRequest(req, res, req.params.service, 'query', false, next);
+});
 
-    app.post('/api/:service/', function (req, res, next) {
-        _processApiRequest(req, res, req.params.service, 'create', true, next);
-    });
+app.post('/api/:service/', function (req, res, next) {
+    _processApiRequest(req, res, req.params.service, 'create', true, next);
+});
 
-    app.get('/api/:service/:method', function (req, res, next) {
-        _processApiRequest(req, res, req.params.service, req.params.method, false, next);
-    });
+app.get('/api/:service/:method', function (req, res, next) {
+    _processApiRequest(req, res, req.params.service, req.params.method, false, next);
+});
 
-    app.post('/api/:service/:method', function (req, res, next) {
-        _processApiRequest(req, res, req.params.service, req.params.method, true, next);
-    });
+app.post('/api/:service/:method', function (req, res, next) {
+    _processApiRequest(req, res, req.params.service, req.params.method, true, next);
+});
 // Redirect all non api requests to the index
-    app.get('/', function(req, res) {
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
+app.get('*', function (req, res) {
+    if (req.xhr) {
+        res.status(404);
+        res.json({message: 'Requested Resource  does not exists!'});
+    } else {
         res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    });
+    }
+});
 
 
-    app.get('*', function(req, res) {
-        if (req.xhr){
-            res.status(404);
-            res.json({ message: 'Requested Resource  does not exists!'});
-        } else {
-            res.sendFile(path.join(__dirname, 'public', 'index.html'));
-        }
-    });
+app.use(function (err, req, res, next) {
+    if (!res.headersSent) {
+        res.status(400).json({code: err.code, message: err.message || 'Unexpected error occurred.'});
+    }
+});
 
-
-    app.use(function (err, req, res, next) {
-        if (!res.headersSent){
-            res.status(400).json({ code: err.code, message: err.message || 'Unexpected error occurred.'});
-        }
-    });
-
-    let httpClient = http.createServer(app).listen(app.get('port'), function () {
-        console.log('Express server listening on port ' + app.get('port'));
-    });
-
-
-}
-
-
+let httpClient = http.createServer(app).listen(app.get('port'), function () {
+    console.log('Express server listening on port ' + app.get('port'));
+});
 
 
 /***
@@ -169,7 +104,6 @@ Date.prototype.stdTimezoneOffset = function () {
 Date.prototype.dst = function () {
     return this.getTimezoneOffset() < this.stdTimezoneOffset();
 };
-
 
 
 function _processApiRequest(req, res, service, method, isPostRequest, next) {
