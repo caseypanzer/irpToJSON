@@ -7,7 +7,6 @@
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
                      ngf-pattern="*">
                     Drop or Select Loan Setup File in .xlsx format
-
                     <div class="text-success">{{$ctrl.loanFile.name}}</div>
                 </div>
 
@@ -15,16 +14,20 @@
             <!--application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet-->
             <div class="col-perc-50">
                 <div ngf-select ng-model="$ctrl.serviceFile" class="drop-box"
-                     ngf-drag-over-class="'dragover'" ngf-multiple="false"
+                     ngf-drag-over-class="'dragover'" ngf-multiple="true"
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
                      ngf-pattern="*">
                     Drop or Select Servicer Setup File in .xlsx format
-
                     <div class="text-success">{{$ctrl.serviceFile.name}}</div>
                 </div>
+                <div class="row">
+                    <div class="col-perc-30"   ng-repeat="tab in $ctrl.availableServiceTabs">
 
+                       <div class="alert  bordered margin-10" ng-class="{ 'alert-success': tab.isAvailable }"> {{ tab.name }}</div> </div>
+
+
+                </div>
             </div>
-
             <div class="col-perc-100 margin-top-10" ng-if="$ctrl.loanFile && $ctrl.serviceFile">
                 <button ng-disabled="$ctrl.sumittingFiles" class="go col-perc-100 btn btn-primary  margin-left-10"
                         ng-click="$ctrl.uploadFiles()"><span ng-if="!$ctrl.sumittingFiles">Convert</span><span

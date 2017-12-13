@@ -9,6 +9,11 @@
     var module = angular.module("IrpToJsonViewer", ['ui.router', 'ui.bootstrap', 'ui.bootstrap.tpls', 'ngResource', 'toastr', 'ngSanitize', 'ngFileUpload']);
 
 
+    require('bootstrap/dist/css/bootstrap.min.css');
+    require('angular-toastr/dist/angular-toastr.css');
+    require('ionicons/dist/css/ionicons.css');
+    require('../styles.css');
+
     module.component('tinySpinner', {
         template: ['<div class="tiny-spinner">',
             '<div class="bounce1"></div>',
@@ -19,9 +24,7 @@
      * Router config
      */
     module.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$locationProvider', function ($stateProvider, $urlRouterProvider, $httpProvider, $locationProvider) {
-
-
-            $stateProvider
+        $stateProvider
             .state('dashboard', {
                 url: '/',
                 templateUrl: '/views/dashboard.html',
@@ -29,13 +32,18 @@
                 controllerAs: '$ctrl'
             });
 
+        $stateProvider
+            .state('leverton-api', {
+                url: '/levertonApi',
+                templateUrl: '/views/leverton.html',
+                controller: 'LevertonDashboardController',
+                controllerAs: '$ctrl'
+            });
 
         // use the HTML5 History API
         $locationProvider.html5Mode({
             enabled: true,
             requireBase: false
         });
-
-
     }]);
 })();

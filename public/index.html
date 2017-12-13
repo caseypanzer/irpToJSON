@@ -11,31 +11,37 @@
     <title>Irp to JSON Viewer  Application </title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/build/all.min.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/themes/default/style.min.css" />
     <script src="https://cdn.polyfill.io/v2/polyfill.js?features=es6"></script>
-    <script src="/build/vendors.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
+
+    <script src="/dist/app.js"></script>
+
 </head>
 <body>
 
 <div class="container">
+
     <div class="maincontainer">
+        <nav class="navbar navbar-static-top">
+            <div class="navbar-header">
+                <a class="navbar-brand" ui-sref="dashboard">
+                    <span class="glyphicon glyphicon-home"></span> Dashboard
+                </a>
+            </div>
+
+            <div class="navbar-header user-info-corner pull-right">
+                <a class="navbar-brand" ui-sref="leverton-api">
+                    <span class="glyphicon glyphicon-home"></span> Leverton Dashboard
+                </a>
+            </div>
+        </nav>
         <div class="container-fluid" ui-view>
         </div>
     </div>
 
 </div>
 
-
-<!--[if lt IE 9]>
-<script src="/bower_components/es5-shim/es5-shim.js"></script>
-<script src="/bower_components/es6-shim/es6-shim.js"></script>
-<script src="/bower_components/json3/lib/json3.min.js"></script>
-<![endif]-->
-
-<script src="/build/app.js"></script>
 </body>
 </html>

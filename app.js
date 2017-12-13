@@ -20,16 +20,19 @@ const express = require('express'),
     morgan = require('morgan'),
     helmet = require('helmet'),
     multer = require('multer'),
-    upload = multer({dest: "server/uploads/"});
+    upload = multer({dest: "server/uploads/"}),
+    webpack = require('webpack'),
+    webPackconfig = require('./webpack.config');
 
 let uploadMiddleWare = upload.fields([{name: 'loanFile', maxCount: 1}, {name: 'serviceFile', maxCount: 1}]);
 
 let app = module.exports = express();
 
-
 if (app.get('env') === 'production') {
     app.set('trust proxy', 1) // trust first proxy
 }
+
+
 app.use(helmet());
 app.disable('x-powered-by');
 app.disable('X-XSS-Protection');
@@ -42,6 +45,22 @@ app.use(bodyParser.urlencoded({limit: '9999kb', type: 'application/x-www-form-ur
 //app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({limit: '2000mb', type: 'application/json'}));
 app.use(methodOverride('X-HTTP-Method-Override'));
+
+const webpackOptions = {
+    contentBase: './dist',
+    hot: true,
+    host: 'localhost'
+};
+
+//webpackDevServer.addDevServerEntrypoints(config, webpackOptions);
+
+let compiler = webpack(webPackconfig);
+app.use(require('webpack-dev-middleware')(compiler, {
+    noInfo: true,
+    publicPath: webPackconfig.output.publicPath
+}));
+
+app.use(require('webpack-hot-middleware')(compiler));
 
 
 app.post('/api/files/upload', uploadMiddleWare, function (req, res, next) {

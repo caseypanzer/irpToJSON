@@ -83,8 +83,10 @@ bower_components
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
+public/dist
 
 # Dependency directories
+node_modules
 node_modules/
 jspm_packages/
 
@@ -111,3 +113,13 @@ typings/
 
 
 /irpToJSON.iml
+.DS_Store
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+package-lock.json
+public/.DS_Store
+server/.DS_Store
+server/outputs/
+server/uploads/

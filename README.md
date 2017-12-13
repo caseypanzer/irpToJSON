@@ -2,7 +2,7 @@
 Convert the IRP to JSON Format
 
 
-# Please Run the following command to generate output
+# Please run the following command to generate output
 
 
 `$ npm intall` // install  the  nodejs dependency

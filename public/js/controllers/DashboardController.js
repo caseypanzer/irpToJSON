@@ -6,9 +6,12 @@
 (function () {
     'use strict';
 
+
+
     var module = angular.module('IrpToJsonViewer');
 
-
+        var XLSX = require('XLSX');
+        var async = require('async');
     /**
      * The product list Controller
      */
@@ -16,8 +19,98 @@
 
         var $ctrl = this;
 
+        let expectedServiceTabs = [
+            '_property',
+            '_financial',
+            'tCComparativeFinancialStatusIRP',
+            'rptDDelinquentLoanStatus',
+            'rptMHistoricalLoanMod',
+            'rptRsvLOC',
+            'rptREOStatus',
+            'rptWServicerWatchlistIRP',
+            'TLR',
+            'rptAdvRecovery'
+        ];
+
+
+        function getAvaileAbleServiceTab() {
+            $ctrl.availableServiceTabs = expectedServiceTabs.reduce(function (memo, current) {
+                  memo.push({
+                    name: current,
+                    isAvailable : false
+                });
+                return  memo;
+            },[]);
+
+            return  $ctrl.availableServiceTabs;
+        }
+
+
         $ctrl.investments = undefined;
 
+        getAvaileAbleServiceTab();
+
+        $scope.$watch('$ctrl.serviceFile', function (newVal, oldVal) {
+
+            if(newVal !==  oldVal){
+
+                setTimeout(adjustAvailableTabs, 10)
+            }
+
+        });
+
+
+        function adjustAvailableTabs() {
+
+            let availableServiceTabs = getAvaileAbleServiceTab();
+
+            readFileSheetName($ctrl.serviceFile);
+            $scope.$applyAsync();
+        }
+
+
+
+
+        function readFileSheetName(files) {
+
+
+            let sheetNameMap = {};
+            async.eachSeries(files,  function (file, next) {
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var data = e.target.result;
+                    var workbook;
+                    try {
+                        workbook = XLSX.read(data, {type: 'binary'});
+                        if (workbook && Array.isArray(workbook.SheetNames)) {
+                            workbook.SheetNames.forEach(function (sheetName) {
+                                sheetNameMap[sheetName.toLowerCase()] = true;
+                            });
+                        }
+                        next(null);
+
+                    } catch (ex) {
+                        var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
+                        console.log(message);
+                        next(null);
+                    }
+
+                };
+
+                reader.readAsBinaryString(file);
+
+            }, function () {
+
+                $ctrl.availableServiceTabs = $ctrl.availableServiceTabs.map(function (item) {
+                    item.isAvailable = sheetNameMap[item.name.toLowerCase()] === true;
+                    return item;
+                });
+
+                $scope.$applyAsync();
+            });
+
+        }
 
         $ctrl.uploadFiles = function () {
 
@@ -30,10 +123,11 @@
             getBase64($ctrl.loanFile).then(res => {
                 loanText  =  res;
                 return  getBase64($ctrl.serviceFile);
-            }).then((res)=>{
+            }).then((res)=> {
                 serviceText  =  res;
                 return  true;
             }).then(() => {
+
                 let  requestParams =  {
                     "loanFile"  :  loanText,
                     "serviceFile": serviceText
@@ -44,7 +138,7 @@
                     dataType : 'json',
                     cache    : false,
                     processData: false,
-                    timeout  : 600 * 1000,
+                    timeout  : 9999999999,
                     //contentType : 'application/json; charset=UTF-8',
                     data     : JSON.stringify(requestParams),
                     success: function (resp) {

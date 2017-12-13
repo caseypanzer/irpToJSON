@@ -464,3 +464,6 @@ table td.selected, table tr.selected td {
 .pointer {
     cursor: pointer;
 }
+.bordered{
+    border:1px solid gray;
+}
