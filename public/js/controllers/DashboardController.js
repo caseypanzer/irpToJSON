@@ -51,19 +51,14 @@
         getAvaileAbleServiceTab();
 
         $scope.$watch('$ctrl.serviceFile', function (newVal, oldVal) {
-
             if(newVal !==  oldVal){
-
                 setTimeout(adjustAvailableTabs, 10)
             }
-
         });
 
 
         function adjustAvailableTabs() {
-
             let availableServiceTabs = getAvaileAbleServiceTab();
-
             readFileSheetName($ctrl.serviceFile);
             $scope.$applyAsync();
         }
@@ -122,7 +117,7 @@
 
             getBase64($ctrl.loanFile).then(res => {
                 loanText  =  res;
-                return  getBase64($ctrl.serviceFile);
+                return  getBase64(_.head($ctrl.serviceFile));
             }).then((res)=> {
                 serviceText  =  res;
                 return  true;

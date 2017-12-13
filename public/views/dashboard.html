@@ -9,7 +9,6 @@
                     Drop or Select Loan Setup File in .xlsx format
                     <div class="text-success">{{$ctrl.loanFile.name}}</div>
                 </div>
-
             </div>
             <!--application/vnd.ms-excel,application/xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet-->
             <div class="col-perc-50">
@@ -22,10 +21,7 @@
                 </div>
                 <div class="row">
                     <div class="col-perc-30"   ng-repeat="tab in $ctrl.availableServiceTabs">
-
-                       <div class="alert  bordered margin-10" ng-class="{ 'alert-success': tab.isAvailable }"> {{ tab.name }}</div> </div>
-
-
+                        <div class="alert  bordered margin-10" ng-class="{ 'alert-success': tab.isAvailable }"> {{ tab.name }}</div> </div>
                 </div>
             </div>
             <div class="col-perc-100 margin-top-10" ng-if="$ctrl.loanFile && $ctrl.serviceFile">
