@@ -207,5 +207,87 @@
         "stmtType",
         "categoryCode",
         "amount"
-    ]
+    ],
+    "rptddelinquentloanstatus":  [
+        "Paid Through Date",
+        "Cumulative ASER Amount",
+        "Total P&I Advance Outstanding",
+        "Other Expense Advance Outstanding",
+        "Total T&I Advance Outstanding",
+        "Cumulative Accrued Unpaid Advance Interest",
+        "Most Recent Valuation Date",
+        "Most Recent Value",
+        "Loss Using 90% of Most Recent Value",
+        "ARA (Appraisal Reduction Amount)",
+        "Most Recent Special Servicer Transfer Date",
+        "Date Asset Expected to be Resolved or Foreclosed",
+        "Workout Strategy",
+        "Comments - DLSR"
+    ],
+    "rptmhistoricalloanmod": [
+        "Modification Code",
+        "Most Recent Master Servicer Return Date",
+        "Date of Last Modification",
+        "Balance When Sent to Special Servicer",
+        "Balance at the Effective Date of Modificaiton",
+        "Old Note Rate",
+        "Number of Months for Rate Change",
+        "Modified Note Rate",
+        "Old P&I",
+        "Modified Payment Amount",
+        "Old Maturity Date",
+        "Maturity Date",
+        "Total Months for Change of Modification",
+        "Realized Loss to Trust",
+        "Estimated Future Interest Loss to Trust $ (Rate Reduction)",
+        "Comments- HLMFCLR",
+        "Modification Execution Date",
+        "Modification Booking Date"
+    ],
+    "rptwservicerwatchlistirp":[
+      "Date Added to Watchlist",
+      "Trigger Codes",
+      "Comment/Action to be taken",
+      "Informational or Credit"
+    ],
+      "rptrsvloc":[
+        "Reserve Account Type",
+        "Reserve Balance at Contribution",
+        "Beginning Reserve Balance",
+        "Reserve Deposits",
+        "Reserve Disbursements",
+        "Ending Reserve Balance",
+        "LOC Expiration Date",
+        "Comments Loan Level Reserve/LOC"
+      ],
+      "rptadvrecovery":[
+        "WODRA / Deemed Non- Recoverable Date",
+        "Advance Interest",
+        "Initial Reimbursement Date",
+        "Current",
+        "Cumulative",
+        "Amounts Outstanding",
+        "Unliquidated Advances (Beginning Balance)",
+        "Current Principal Amounts Paid By Borrower",
+        "Unliquidated Advances (Ending Balance)",
+        "It It Still Recoverable or Unrecoverable (R/N)",
+        "If Nonrecoverable Advances Reimbursed From Principal, Realized Loss Amount",
+        "Comments- Advance Recovery",
+        "Actual Balance",
+        "Current Hyper Amortizing Date"
+      ],
+      "rptreostatus":[
+        "Paid Through Date",
+        "Current Allocated Ending Scheduled Loan Amount",
+        "Cumulative ASER Amount",
+        "Total P&I Advance Outstanding",
+        "Cumulative Accrued Unpaid Advance Interest",
+        "Most Recent Valuation Date",
+        "Most Recent Valuation Source",
+        "Most Recent Value",
+        "Loss using 90% of Most Recent Value(f)",
+        "REO Date",
+        "Date Asset Expected to be Resolved or Foreclosed",
+        "Comments - REO"
+      ]
 }

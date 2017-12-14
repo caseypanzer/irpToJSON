@@ -97,8 +97,16 @@
 
             }, function () {
 
+                let sheetNameMapKeys = Object.keys(sheetNameMap);
+
                 $ctrl.availableServiceTabs = $ctrl.availableServiceTabs.map(function (item) {
-                    item.isAvailable = sheetNameMap[item.name.toLowerCase()] === true;
+                    let  isAvailable= sheetNameMapKeys.some(function (keyNameItem) {
+                       return new RegExp(item.name+'$', 'i').test(keyNameItem)
+                    });
+                    if(isAvailable === true){
+                        item.isAvailable = isAvailable;
+                    }
+
                     return item;
                 });
 
@@ -117,7 +125,17 @@
 
             getBase64($ctrl.loanFile).then(res => {
                 loanText  =  res;
-                return  getBase64(_.head($ctrl.serviceFile));
+
+                let _promises = [];
+
+                if(Array.isArray($ctrl.serviceFile)){
+                    $ctrl.serviceFile.forEach(function (_serviceFile) {
+                        _promises.push(getBase64(_serviceFile));
+                    });
+                }
+
+                return Promise.all(_promises);
+
             }).then((res)=> {
                 serviceText  =  res;
                 return  true;
@@ -128,13 +146,13 @@
                     "serviceFile": serviceText
                 };
 
-                $.ajax(AppConstants.FILE_UPLOAD_URI, {
+                $.ajax(AppConstants.FILE_UPLOAD_URI_LOCAL, {
                     type     : 'POST',
                     dataType : 'json',
                     cache    : false,
                     processData: false,
                     timeout  : 9999999999,
-                    //contentType : 'application/json; charset=UTF-8',
+                    contentType : 'application/json; charset=UTF-8',
                     data     : JSON.stringify(requestParams),
                     success: function (resp) {
                        // console.log(resp);

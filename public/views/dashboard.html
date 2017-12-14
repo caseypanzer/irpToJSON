@@ -17,7 +17,7 @@
                      ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
                      ngf-pattern="*">
                     Drop or Select Servicer Setup File in .xlsx format
-                    <div class="text-success">{{$ctrl.serviceFile.name}}</div>
+                    <div class="text-success" ng-repeat="_serviceFile in $ctrl.serviceFile track by $index">{{ _serviceFile.name }}</div>
                 </div>
                 <div class="row">
                     <div class="col-perc-30"   ng-repeat="tab in $ctrl.availableServiceTabs">

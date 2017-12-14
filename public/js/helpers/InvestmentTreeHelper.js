@@ -8,6 +8,17 @@
 
     let module = angular.module('IrpToJsonViewer');
 
+    let otherPropertyKeys = ['tccomparativefinancialstatusirp',
+        'rptddelinquentloanstatus',
+        'rptmhistoricalloanmod',
+        'rptrsvloc',
+        'rptreostatus',
+        'rptwservicerwatchlistirp',
+        'tlr',
+        'rptadvrecovery'];
+
+
+    console.log('otherPropertyKeys', otherPropertyKeys);
     module.factory('InvestmentTreeHelper', [function () {
         return {
             buildTree:  function (data) {
@@ -132,7 +143,79 @@
         return grandPropertiesNode;
     }
 
+    function _prepareOtherPropertyNode(investment, otherPropertyKeys) {
+
+        debugger;
+        let _otherGrandNodes =[];
+
+        /*{
+            text: '',
+            children: []
+        };*/
+
+        let  uniqDates = [];
+
+        otherPropertyKeys.forEach(function (_otherPropertyKey) {
+            if(investment[_otherPropertyKey].length >  0){
+                investment[_otherPropertyKey] = investment[_otherPropertyKey].map(function (item) {
+                    if (item.startDate){
+                        item.startDate = new Date(item.startDate);
+                        let dtString  = item.startDate.toDateString();
+                        if(uniqDates.indexOf(dtString) === -1){
+                            uniqDates.push(dtString);
+                        }
+                    }
+                    return item;
+                });
+
+            }
+        });
+
+        uniqDates = _.sortBy(uniqDates, item => new  Date(item));
+        uniqDates.forEach(function (_dtStr) {
+            let dateNode = {
+                text: _dtStr,
+                children: []
+            };
+
+            otherPropertyKeys.forEach(function (_otherPropertyKey) {
+
+                let otherPropertyNode = {
+                    text: _otherPropertyKey,
+                    children: []
+                };
+
+
+                if(Array.isArray(investment[_otherPropertyKey]) && investment[_otherPropertyKey].length > 0){
+                    let otherDataByDateAndPropertyKey = investment[_otherPropertyKey].filter(function (data) {
+                       return data.startDate && data.startDate.toDateString() ===  _dtStr;
+                    });
+
+                    otherDataByDateAndPropertyKey.forEach(function (dataItem) {
+                        Object.keys(dataItem).forEach(function (propKey) {
+                            if (!Array.isArray(dataItem[propKey])) {
+                                let dataNode = {text: [propKey, dataItem[propKey]].join(' : '), icon: 'none'};
+                                console.log(investment.loanId, dataNode);
+                                otherPropertyNode.children.push(dataNode);
+                            }
+                        });
+                    });
+                }
+
+
+                dateNode.children.push(otherPropertyNode);
+            });
+
+
+
+
+            _otherGrandNodes.push(dateNode);
+        });
+        return  _otherGrandNodes;
+    }
+
     function _prepareInvestmentNode(investment) {
+
         let investmentNode = {
             text: investment.loanId,
             children: []
@@ -144,8 +227,16 @@
                 investmentNode.children.push(nodeItem);
             }
         });
+
         let grandPropertiesNode = _preparePropertiesNode(investment);
         investmentNode.children.push(grandPropertiesNode);
+        let _otherPropertyNode = _prepareOtherPropertyNode(investment, otherPropertyKeys);
+        if(Array.isArray(_otherPropertyNode)){
+            _otherPropertyNode.forEach(function (_node) {
+                investmentNode.children.push(_node);
+            })
+        }
+
         return investmentNode;
     }
 })();

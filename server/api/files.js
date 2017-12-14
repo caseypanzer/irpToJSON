@@ -11,7 +11,6 @@ var awsService = require('../services/awsService');
 
 module.exports.upload = function (req, res, params, next) {
 
-    debugger;
    // console.log(typeof params);
     //console.log(Object.keys(params));
     let loanFile, serviceFile;
@@ -25,13 +24,16 @@ module.exports.upload = function (req, res, params, next) {
         }
     });
 */
-    if(params.loanFile){
+
+
+    if(params.loanFile && params.serviceFile){
          loanFile   = decodeURIComponent(params.loanFile); //new  Buffer(params.loanFile, 'base64');
-        serviceFile = decodeURIComponent(params.serviceFile);
+         serviceFile = params.serviceFile.map((_serviceFile)=> decodeURIComponent(_serviceFile));
     }
 
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentJson) {
+           // next(new Error('Test  Error'));
             res.json(investmentJson);
             setImmediate(() => {
                 loanFile.path  && fs.unlinkSync(loanFile.path);

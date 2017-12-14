@@ -9,9 +9,17 @@ const moment       = require('moment');
 const excelParserService = require('./excelParserService');
 const jsonDataKeys = require('../input-files/keyNames.json');
 
-const financialSheetMapper = {
-    "wfcm16c34_201711_property"  :  { name : "property" },
-    "wfcm16c34_201711_financial" :  { name: "financial" }
+const financialSheetMapper               = {
+    "wfcm16c34_201711_property"          : { name: "property" },
+    "wfcm16c34_201711_financial"         : { name: "financial" },
+    'tccomparativefinancialstatusirp'    : { name: 'tccomparativefinancialstatusirp', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rptddelinquentloanstatus'           : { name: 'rptddelinquentloanstatus' , isHeaderRowExists: true, primaryKey: 'loanId' },
+    'rptmhistoricalloanmod'              : { name: 'rptmhistoricalloanmod', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rptrsvloc'                          : { name: 'rptrsvloc', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rptreostatus'                       : { name: 'rptreostatus' , isHeaderRowExists: true, primaryKey: 'propertyId' },
+    'rptwservicerwatchlistirp'           : { name: 'rptwservicerwatchlistirp', isHeaderRowExists: true , primaryKey: 'loanId'  },
+    'tlr'                                : { name: 'tlr', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rptadvrecovery'                     : { name: 'rptadvrecovery', isHeaderRowExists: true,  primaryKey: 'loanId'  }
 };
 
 module.exports.processInputFiles = function (params) {
@@ -31,11 +39,39 @@ module.exports.processInputFiles = function (params) {
 
         module.exports.parseLoanFile(loanFile).then((loans)=> {
             loanCollections = loans;
-            return  module.exports.parsePropertyFinancialData(serviceFile);
+
+            let _promises = [];
+
+            serviceFile.forEach(function (_serviceFile) {
+                _promises.push(module.exports.parsePropertyFinancialData(_serviceFile));
+            });
+
+            return Promise.all(_promises).then(function (_financeDataCollection) {
+                let allFinanceData = {};
+
+                if(Array.isArray(_financeDataCollection)){
+                    _financeDataCollection.forEach(function (_financeData) {
+                        console.log('Object.keys(_financeData)', Object.keys(_financeData));
+                        Object.keys(_financeData).forEach(function (_keyName) {
+                            if(!allFinanceData[_keyName]){
+                                allFinanceData[_keyName] = [];
+                            }
+                            if(Array.isArray(_financeData[_keyName])){
+                                _financeData[_keyName].forEach(function (dataItem) {
+                                    allFinanceData[_keyName].push(dataItem);
+                                })
+                            }
+                        });
+                    })
+                }
+
+                return allFinanceData;
+            });
+
         }).then((propertyFinanceData)=> {
             if (propertyFinanceData) {
-                propertyData = propertyFinanceData.property;
-                financialData = propertyFinanceData.financial;
+                propertyData   = propertyFinanceData.property;
+                financialData  = propertyFinanceData.financial;
             }
             let propertyGroupData;
             if (Array.isArray(financialData)){
@@ -108,19 +144,109 @@ module.exports.processInputFiles = function (params) {
                     });
                 }
             }
+
             if(Array.isArray(loanCollections)){
                 loanCollections = loanCollections.map(function (loanItem) {
                     if(loanItem){
+                        if(!Array.isArray(loanItem.properties)){
+                            loanItem.properties = [];
+                        }
                         let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
                         if (propertyGroupData && propertyGroupData[loanForeignKey]){
-                            loanItem.properties = propertyGroupData[loanForeignKey];
-                        }  else {
-                            loanItem.properties = [];
+
+                            propertyGroupData[loanForeignKey].forEach(function (dataItem) {
+                                loanItem.properties.push(dataItem);
+                            });
                         }
                     }
                     return  loanItem;
                 });
             }
+
+            let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
+
+            loanCollections = loanCollections.map(function (loanItem) {
+                otherPropertyKeys.forEach(function (keyName) {
+                    if(!Array.isArray(loanItem[keyName])) {
+                        loanItem[keyName] = [];
+                    }
+                });
+                return loanItem;
+            });
+
+
+            otherPropertyKeys.forEach(function (dataKey) {
+                if(propertyFinanceData[dataKey].length >0 ){
+                    if (financialSheetMapper[dataKey] && financialSheetMapper[dataKey].primaryKey){
+
+                        let _primaryKey = financialSheetMapper[dataKey].primaryKey;
+
+                        let  _groupedData;
+                        if(_primaryKey === 'loanId'){
+
+                            _groupedData = _.groupBy(propertyFinanceData[dataKey],function (loanItem) {
+                                return [_.trim(loanItem.loanId) , _.trim(loanItem.prospectusLoanId)].join('-');
+                            });
+
+                            // let groupKeys = Object.keys(_groupedData);
+
+                            if(_groupedData){
+                                loanCollections = loanCollections.map(function (loanItem) {
+                                    let __loanPrimaryKey = [_.trim(loanItem.loanId) , _.trim(loanItem.prospectusLoanId)].join('-');
+                                    if(_groupedData[__loanPrimaryKey]){
+                                        _groupedData[__loanPrimaryKey].forEach(function (dataItem) {
+                                            console.log('prospectusLoanId',dataKey, dataItem.paidThruDate);
+
+                                            if(!dataItem.startDate){
+                                                if(dataItem.paidThruDate){
+                                                    dataItem.startDate = dataItem.paidThruDate;
+                                                } else {
+                                                    dataItem.startDate = new Date();
+                                                }
+                                            }
+
+                                            loanItem[dataKey].push(dataItem);
+                                        });
+                                       // console.log(dataKey, __loanPrimaryKey, loanItem[dataKey]);
+                                    }
+                                    return  loanItem;
+                                });
+                            }
+                        } else if(_primaryKey === 'propertyId'){
+
+
+
+
+                        }
+
+
+
+                        /*groupKeys.forEach(function (keyName) {
+                            if(loanCollectionMap[keyName]){
+                                let _propertyName = keyName;
+                                if(!Array.isArray(loanCollectionMap[keyName][_propertyName])){
+                                    loanCollectionMap[keyName][_propertyName] = [];
+                                }
+
+                                _groupedData[keyName].forEach(function (_groupDataItem) {
+                                    loanCollectionMap[keyName][_propertyName].push(_groupDataItem);
+                                });
+
+                            }
+                        });*/
+
+
+                       // console.log('propertyFinanceData[dataKey]._groupedData', groupKeys);
+                    }
+
+                }
+            });
+
+            //console.log(loanCollections);
+
+            loanCollections = _.sortBy(loanCollections, function (loanItem) {
+                return parseInt(loanItem.loanId.toString());
+            });
             resolve({Investments : loanCollections});
         }).catch(ex=> reject(ex));
     });
@@ -133,7 +259,7 @@ module.exports.parsePropertyFinancialData= function (file) {
     return new Promise((resolve, reject) => {
         let parsedFileContent =  getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
-        excelParserService.parseBinaryFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: financialSheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
+        excelParserService.parseFinancialBinaryFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: financialSheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
     });
 };
 
