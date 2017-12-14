@@ -7,10 +7,8 @@ Convert the IRP to JSON Format
 
 `$ npm intall` // install  the  nodejs dependency
 
-`$ bower install`  //  installing front end dependency
+`$ npm run build` // command to  execute the frontend build process
 
-`$ gulp` // command to  execute the frontend build process
-
-`$ npm start`
+`$ npm start` //  to start the server
 
 Then  navigate to http://localhost:4444/
