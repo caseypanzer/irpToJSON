@@ -185,25 +185,24 @@ module.exports.processInputFiles = function (params) {
                         if(_primaryKey === 'loanId'){
 
                             _groupedData = _.groupBy(propertyFinanceData[dataKey],function (loanItem) {
-                                return [_.trim(loanItem.loanId) , _.trim(loanItem.prospectusLoanId)].join('-');
+                                return _.trim(loanItem.loanId);
                             });
 
                             // let groupKeys = Object.keys(_groupedData);
-
                             if(_groupedData){
                                 loanCollections = loanCollections.map(function (loanItem) {
-                                    let __loanPrimaryKey = [_.trim(loanItem.loanId) , _.trim(loanItem.prospectusLoanId)].join('-');
+                                    let __loanPrimaryKey = _.trim(loanItem.loanId);
                                     if(_groupedData[__loanPrimaryKey]){
                                         _groupedData[__loanPrimaryKey].forEach(function (dataItem) {
-                                            console.log('prospectusLoanId',dataKey, dataItem.paidThruDate);
-
-                                            if(!dataItem.startDate){
+                                            //console.log('prospectusLoanId',dataKey, dataItem.paidThruDate);
+                                            dataItem.startDate = new Date();
+                                            /*if(!dataItem.startDate){
                                                 if(dataItem.paidThruDate){
                                                     dataItem.startDate = dataItem.paidThruDate;
                                                 } else {
                                                     dataItem.startDate = new Date();
                                                 }
-                                            }
+                                            }*/
 
                                             loanItem[dataKey].push(dataItem);
                                         });

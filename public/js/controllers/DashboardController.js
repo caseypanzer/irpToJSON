@@ -6,12 +6,10 @@
 (function () {
     'use strict';
 
-
-
     var module = angular.module('IrpToJsonViewer');
+    var XLSX  = require('XLSX');
+    var async = require('async');
 
-        var XLSX = require('XLSX');
-        var async = require('async');
     /**
      * The product list Controller
      */
@@ -65,13 +63,9 @@
 
 
 
-
         function readFileSheetName(files) {
-
-
             let sheetNameMap = {};
             async.eachSeries(files,  function (file, next) {
-
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     var data = e.target.result;
