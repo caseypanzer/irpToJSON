@@ -73,7 +73,8 @@ module.exports.processInputFiles = function (params) {
                 propertyData   = propertyFinanceData.property;
                 financialData  = propertyFinanceData.financial;
             }
-            let propertyGroupData;
+            debugger;
+            let propertyGroupData, __propertyDataMap;
             if (Array.isArray(financialData)){
                 financialData = financialData.map(function (item) {
                     if  (item.startDate && !moment.isDate(item.startDate)){
@@ -139,28 +140,7 @@ module.exports.processInputFiles = function (params) {
                         }
                         return  propertyItem;
                     });
-                    propertyGroupData = _.groupBy(propertyData,  function (item) {
-                        return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
-                    });
                 }
-            }
-
-            if(Array.isArray(loanCollections)){
-                loanCollections = loanCollections.map(function (loanItem) {
-                    if(loanItem){
-                        if(!Array.isArray(loanItem.properties)){
-                            loanItem.properties = [];
-                        }
-                        let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
-                        if (propertyGroupData && propertyGroupData[loanForeignKey]){
-
-                            propertyGroupData[loanForeignKey].forEach(function (dataItem) {
-                                loanItem.properties.push(dataItem);
-                            });
-                        }
-                    }
-                    return  loanItem;
-                });
             }
 
             let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
@@ -196,27 +176,45 @@ module.exports.processInputFiles = function (params) {
                                         _groupedData[__loanPrimaryKey].forEach(function (dataItem) {
                                             //console.log('prospectusLoanId',dataKey, dataItem.paidThruDate);
                                             dataItem.startDate = new Date();
-                                            /*if(!dataItem.startDate){
-                                                if(dataItem.paidThruDate){
-                                                    dataItem.startDate = dataItem.paidThruDate;
-                                                } else {
-                                                    dataItem.startDate = new Date();
-                                                }
-                                            }*/
 
                                             loanItem[dataKey].push(dataItem);
                                         });
-                                       // console.log(dataKey, __loanPrimaryKey, loanItem[dataKey]);
+
                                     }
                                     return  loanItem;
                                 });
                             }
                         } else if(_primaryKey === 'propertyId'){
 
+                            _groupedData = _.groupBy(propertyFinanceData[dataKey],function (loanItem) {
+                                return _.trim(loanItem.propertyId);
+                            });
+
+                            // let groupKeys = Object.keys(_groupedData);
+                            if(_groupedData){
+
+                                __propertyDataMap =_.groupBy(propertyData,  function (item) {
+                                    return _.trim(item.propertyId);
+                                });
+
+                                Object.keys(_groupedData).forEach(function (__key) {
+                                    if(__propertyDataMap[__key]){
+                                        __propertyDataMap[__key].forEach(function (propertyDataItem) {
+                                            if(!Array.isArray(propertyDataItem[dataKey])){
+                                                propertyDataItem[dataKey] = [];
+                                            }
+                                            _groupedData[__key].forEach(function (item) {
+                                                item.startDate = new Date();
+                                                propertyDataItem[dataKey].push(item);
+                                            });
+                                        });
 
 
-
-                        }
+                                       // console.log(dataKey, __propertyDataMap[__key]);
+                                    }
+                                });
+                            }
+                            }
 
 
 
@@ -241,11 +239,37 @@ module.exports.processInputFiles = function (params) {
                 }
             });
 
-            //console.log(loanCollections);
+            propertyGroupData = _.groupBy(propertyData,  function (item) {
+                return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
+            });
+            if(Array.isArray(loanCollections)){
+                loanCollections = loanCollections.map(function (loanItem) {
+                    if(loanItem){
+                        if(!Array.isArray(loanItem.properties)){
+                            loanItem.properties = [];
+                        }
+                        let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
+                        if (propertyGroupData && propertyGroupData[loanForeignKey]){
+                            propertyGroupData[loanForeignKey].forEach(function (dataItem) {
+
+                                if(dataItem  && dataItem.propertyId === '38-001'){
+                                    console.log('dt', dataItem);
+                                }
+                                loanItem.properties.push(dataItem);
+                            });
+                        }
+                    }
+
+                   // console.log('loanItem.properties', loanItem.properties);
+                    return  loanItem;
+                });
+            }
+
 
             loanCollections = _.sortBy(loanCollections, function (loanItem) {
                 return parseInt(loanItem.loanId.toString());
             });
+            //console.log(loanCollections[0]);
             resolve({Investments : loanCollections});
         }).catch(ex=> reject(ex));
     });

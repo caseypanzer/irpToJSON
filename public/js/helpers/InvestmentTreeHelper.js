@@ -124,20 +124,50 @@
         };
 
         if (Array.isArray(investment.properties)) {
+
+           // console.log('investment.properties',investment.loanId, investment.properties.length);
             investment.properties.forEach(function (property) {
                 let propertiesNode = {
                     text: property.propertyId,
                     children: []
                 };
-                Object.keys(property).forEach(function (propKey) {
+
+                  Object.keys(property).forEach(function (propKey) {
                     if (!Array.isArray(property[propKey])) {
                         let propNodeItem = {text: [propKey, property[propKey]].join(' : '), icon: 'none'};
                         propertiesNode.children.push(propNodeItem);
                     }
                 });
+
+                let grandRptreostatusNode = {
+                    text: 'rptreostatus',
+                    children: []
+                };
+                if(Array.isArray(property.rptreostatus)){
+                    console.log('property.rptreostatus', property.rptreostatus);
+                    let rptreostatusByDates = _.groupBy(property.rptreostatus, function (item) {
+                        return new Date(item.startDate).toDateString();
+                    });
+                    Object.keys(rptreostatusByDates).forEach(function (__keyName) {
+                        let rptreostatusNode = {
+                            text: __keyName,
+                            children: []
+                        };
+                        rptreostatusByDates[__keyName].forEach(function (dataItem) {
+                            Object.keys(dataItem).forEach(function (dataKey) {
+                                if (!Array.isArray(dataItem[dataKey])) {
+                                    var _nodeItem = {text: [dataKey, dataItem[dataKey]].join(' : '), icon: 'none'};
+                                    rptreostatusNode.children.push(_nodeItem);
+                                }
+                            });
+                        });
+                        grandRptreostatusNode.children.push(rptreostatusNode);
+                    });
+                }
                 let grandFinancialNode = _prepareFinancialNodes(property);
                 propertiesNode.children.push(grandFinancialNode);
                 grandPropertiesNode.children.push(propertiesNode);
+                propertiesNode.children.push(grandRptreostatusNode);
             });
         }
         return grandPropertiesNode;
@@ -195,20 +225,14 @@
                         Object.keys(dataItem).forEach(function (propKey) {
                             if (!Array.isArray(dataItem[propKey])) {
                                 let dataNode = {text: [propKey, dataItem[propKey]].join(' : '), icon: 'none'};
-                                console.log(investment.loanId, dataNode);
+                                //console.log(investment.loanId, dataNode);
                                 otherPropertyNode.children.push(dataNode);
                             }
                         });
                     });
                 }
-
-
                 dateNode.children.push(otherPropertyNode);
             });
-
-
-
-
             _otherGrandNodes.push(dateNode);
         });
         return  _otherGrandNodes;
