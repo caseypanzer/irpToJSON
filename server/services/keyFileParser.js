@@ -58,11 +58,6 @@ module.exports.parseKeyFile = function () {
                                 var indStr = i.toString();
                                 if (rowItemsByNumericColIndex[indStr]) {
                                     var __val = rowItemsByNumericColIndex[indStr].data.v;
-                                    if (rowItemsByNumericColIndex[indStr].data.t === 'n') {
-                                        if (new RegExp(dateRegexStr).test(rowItemsByNumericColIndex[indStr].data.w)) {
-                                            __val = moment(new Date(( +(__val) - (25567 + 2)) * 86400 * 1000)).format('MM/DD/YYYY');
-                                        }
-                                    }
                                     row[i] = __val;
                                 } else {
                                     row[i] = '';

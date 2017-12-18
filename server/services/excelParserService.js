@@ -89,24 +89,22 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                 return reject(new Error('Unable to parse  the provided file.'))
             }
 
-            debugger;
             if (workbook && Array.isArray(workbook.SheetNames)) {
                 workbook.SheetNames.forEach(function (sheetName, index) {
-                    if (isSheetAllowed(sheetMapperKeys, sheetName)) {
-                      //  console.log(sheetName + " Allowed", sheetMapper[sheetName.toLowerCase()]);
+                    let checkResult = isSheetAllowed(sheetMapperKeys, sheetName);
+                    let checkResultPropertyName = checkResult.propertyName;
+                    if (checkResult && checkResult.isAllowed) {
                         let worksheet = workbook.Sheets[sheetName];
                         if (worksheet) {
-                            let nickName =  sheetMapper[sheetName.toLowerCase()] ? _.camelCase(sheetMapper[sheetName.toLowerCase()].name) : (sheetMapper.all && sheetMapper.all.name? _.camelCase(sheetMapper.all.name) : 'data');
+                            let nickName =  sheetMapper[checkResultPropertyName] ? _.camelCase(sheetMapper[checkResultPropertyName].name) : (sheetMapper.all && sheetMapper.all.name? _.camelCase(sheetMapper.all.name) : 'data');
                             tableData[nickName] = [];
                             let refDataTable = tableData[nickName];
                             let dataByRowIndex = _getDataByRow(worksheet);
 
-                            if(sheetMapper[sheetName.toLowerCase()] && sheetMapper[sheetName.toLowerCase()].isHeaderRowExists){
+                            if(sheetMapper[checkResultPropertyName] && sheetMapper[checkResultPropertyName].isHeaderRowExists){
                                // console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
-
-                                let jsonKeyMap = jsonDataKeys[sheetName.toLowerCase()];
+                                let jsonKeyMap = jsonDataKeys[checkResultPropertyName];
                                 let headersIndex = [];
-                                let headerRowIndex;
                                 if (jsonKeyMap){
 
                                     //console.log('jsonKeyMap', jsonKeyMap);
@@ -125,13 +123,13 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                         let  _cols = _rowData[i];
                                        // console.log('_cols', _cols);
                                         if(hasValidHeaders(_cols, jsonKeyMap)){
-                                          //  console.log('Header row  Found', _rowData);
                                             headerRowIndex =  i;
                                             for (let indx=0; indx < _cols.length; indx++){
-                                                // console.log(_cols[indx]);
-                                                headersIndex[indx] = _cols[indx] || '';
+                                                if(_cols[indx] && jsonKeyMap.indexOf(_cols[indx]) > -1){
+                                                    headersIndex[indx] = _cols[indx];
+                                                }
                                             }
-                                          //console.log('headerRowIndex', headerRowIndex, headersIndex);
+                                            //console.log('sheetName, headerRowIndex, headersIndex', sheetName, headerRowIndex, headersIndex );
                                             break;
                                         }
 
@@ -142,33 +140,31 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                                 item = _.camelCase(item);
                                             }
                                             return item;
-                                        })
+                                        });
                                     }
 
                                     if (typeof headerRowIndex  !== 'undefined' && headerRowIndex !== null){
-
                                         for (let rIndex= headerRowIndex+1; rIndex < _rowData.length; rIndex++){
                                             let  _cols = _rowData[rIndex];
                                             let  _rowItem = {};
                                             for(let colIndex = 0; colIndex < _cols.length; colIndex++){
                                                 if(typeof  headersIndex[colIndex] !== 'undefined'){
-                                                    _rowItem[headersIndex[colIndex]] = _cols[colIndex];
+                                                    //console.log( headersIndex[colIndex]);
+                                                    if(/date/i.test(headersIndex[colIndex]) && /\d{8}/.test( _cols[colIndex])){
+                                                        _rowItem[headersIndex[colIndex]] = moment( _cols[colIndex], 'YYYYMMDD').toDate();
+                                                        console.log('parsed into date', _rowItem[headersIndex[colIndex]]);
+                                                    } else{
+                                                        _rowItem[headersIndex[colIndex]] = _cols[colIndex];
+                                                    }
                                                 }
 
                                             }
                                             refDataTable.push(_rowItem);
                                         }
-
-
                                     }
-
-                                   // console.log(sheetName,  refDataTable);
-
                                 }
 
                             } else{
-
-
                                 Object.keys(dataByRowIndex).forEach(function (rowKey) {
                                     let row = _collectRowData(dataByRowIndex, rowKey);
                                     if (row.length > 0) {
@@ -188,8 +184,6 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                     }
                 });
             }
-
-
             resolve(tableData);
         });
     });
@@ -231,8 +225,7 @@ function _getDataByRow(worksheet) {
         };
     });
 
-    let dataByRowIndex = _.groupBy(formattedKeydata, 'rowIndex');
-    return dataByRowIndex;
+    return _.groupBy(formattedKeydata, 'rowIndex');
 }
 
 /***
@@ -273,14 +266,46 @@ function _collectRowData(dataByRowIndex, rowKey) {
  */
 function isSheetAllowed(sheetMapperKeys, sheetName) {
 
+    let isAllowed = false;
+    let  propertyName;
+
     if (!sheetMapperKeys.length){
-        return true;
+        isAllowed  = true;
+        return isAllowed;
     }
 
     if(sheetMapperKeys.length === 1 && _.head(sheetMapperKeys).toLowerCase() === 'all' ){
-        return true;
+        propertyName = 'all';
+        isAllowed = true;
+        return {
+            propertyName: propertyName,
+            isAllowed:isAllowed
+        };
     }
-    return (sheetMapperKeys.length > 0 && sheetMapperKeys.find((keyName) => {
-        return new RegExp(keyName, 'i').test(sheetName)
-    }));
+    if(sheetMapperKeys.length > 0 && sheetMapperKeys.find((keyName) => {
+
+        if (keyName === 'property' || keyName === 'financial'){
+            if(new RegExp('_'+keyName, 'i').test(sheetName)){
+                propertyName = keyName;
+                isAllowed = true;
+                return true;
+            }
+        } else  if(new RegExp(keyName+'$', 'i').test(sheetName)){
+            propertyName = keyName;
+            isAllowed = true;
+            return true;
+        }
+        return false;
+    })){
+        return  {
+            propertyName: propertyName,
+            isAllowed:isAllowed
+        };
+    }
+
+
+    return  {
+        propertyName: propertyName,
+        isAllowed:isAllowed
+    };
 }

@@ -4,6 +4,7 @@
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const common = require('./common.js');
 
 module.exports = merge(common, {
@@ -13,6 +14,8 @@ module.exports = merge(common, {
         hot: true
     },
     plugins:[
+        new HtmlWebpackPlugin({
+        }),
         new webpack.NamedModulesPlugin(),
         new webpack.HotModuleReplacementPlugin()
     ],

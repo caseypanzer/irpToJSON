@@ -209,6 +209,7 @@
         "amount"
     ],
     "rptddelinquentloanstatus":  [
+        "Loan ID",
         "Paid Through Date",
         "Cumulative ASER Amount",
         "Total P&I Advance Outstanding",
@@ -225,6 +226,7 @@
         "Comments - DLSR"
     ],
     "rptmhistoricalloanmod": [
+        "Loan ID",
         "Modification Code",
         "Most Recent Master Servicer Return Date",
         "Date of Last Modification",
@@ -245,12 +247,14 @@
         "Modification Booking Date"
     ],
     "rptwservicerwatchlistirp":[
+      "Loan ID",
       "Date Added to Watchlist",
       "Trigger Codes",
       "Comment/Action to be taken",
       "Informational or Credit"
     ],
       "rptrsvloc":[
+        "Loan ID",
         "Reserve Account Type",
         "Reserve Balance at Contribution",
         "Beginning Reserve Balance",
@@ -261,6 +265,7 @@
         "Comments Loan Level Reserve/LOC"
       ],
       "rptadvrecovery":[
+        "Loan ID",
         "WODRA / Deemed Non- Recoverable Date",
         "Advance Interest",
         "Initial Reimbursement Date",
@@ -277,6 +282,8 @@
         "Current Hyper Amortizing Date"
       ],
       "rptreostatus":[
+        "Loan ID",
+        "Property ID",
         "Paid Through Date",
         "Current Allocated Ending Scheduled Loan Amount",
         "Cumulative ASER Amount",
@@ -289,5 +296,10 @@
         "REO Date",
         "Date Asset Expected to be Resolved or Foreclosed",
         "Comments - REO"
-      ]
+      ],
+  "tccomparativefinancialstatusirp":[
+    "Loan ID",
+    "Property ID",
+    "Prospectus ID"
+  ]
 }

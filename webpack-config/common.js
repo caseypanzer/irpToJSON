@@ -8,12 +8,10 @@ const webpack = require('webpack');
 const fs = require('fs');
 const klawSync = require('klaw-sync');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let appSrc;
-
-
 
 try {
     appSrc = klawSync('./public/js', {nodir: true}).map(item=>item.path).filter(item=> /\.js$/.test(item));
@@ -60,7 +58,8 @@ module.exports = {
             _: 'lodash',
             'async': require('async'),
             'moment': require('moment')
-        })
+        }),
+        new webpack.optimize.ModuleConcatenationPlugin()
     ],
     output: {
         filename: '[name].js',

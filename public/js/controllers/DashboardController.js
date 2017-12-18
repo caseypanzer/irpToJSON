@@ -17,6 +17,8 @@
 
         var $ctrl = this;
 
+
+
         let expectedServiceTabs = [
             '_property',
             '_financial',
@@ -178,9 +180,10 @@
             });
             var fileURL = URL.createObjectURL(file);
             var link         = document.createElement('a');
+
             link.href        = fileURL;
             link.target      = '_blank';
-            link.download    = 'Investments.json';
+            link.download    = [$ctrl.loanFile.name.replace(/\.\w+/,''),'.json'].join('');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
