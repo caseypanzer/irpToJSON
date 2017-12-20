@@ -17,7 +17,8 @@ require('jquery-ui');
 window.jQuery  =  $;
 window.jquery = $;
 
-
+window.Buffer = require('buffer/').Buffer;
+window.XLSX = require('XLSX');
 
 require('jstree');
 

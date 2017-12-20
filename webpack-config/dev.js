@@ -21,5 +21,10 @@ module.exports = merge(common, {
     ],
     devServer: {
         contentBase: './dist'
+    },
+    node: {
+        fs         : false,
+        process    : false,
+        Buffer     : false
     }
 });

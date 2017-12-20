@@ -26,6 +26,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.15.0",
     "bootstrap": "^3.3.7",
+    "buffer": "^5.0.8",
     "cheerio": "^0.22.0",
     "cluster": "^0.7.7",
     "compression": "^1.7.1",

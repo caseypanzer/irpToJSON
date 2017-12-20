@@ -6,7 +6,7 @@
 
     'use strict';
 
-    var module = angular.module("IrpToJsonViewer", ['ui.router', 'ui.bootstrap', 'ui.bootstrap.tpls', 'ngResource', 'toastr', 'ngSanitize', 'ngFileUpload']);
+    var module = angular.module("IrpToJsonViewer", ['ui.router', 'ui.bootstrap', 'ui.bootstrap.tpls', 'ui.bootstrap.modal', 'ngResource', 'toastr', 'ngSanitize', 'ngFileUpload']);
 
 
     require('bootstrap/dist/css/bootstrap.min.css');

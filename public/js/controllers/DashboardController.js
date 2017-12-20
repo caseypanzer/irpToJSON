@@ -13,11 +13,11 @@
     /**
      * The product list Controller
      */
-    module.controller('DashboardController', ['$scope', '$state', 'toastr', 'InvestmentTreeHelper', 'AppConstants', function ($scope, $state, toastr, InvestmentTreeHelper, AppConstants) {
+    module.controller('DashboardController', ['$scope', '$state', 'toastr', 'InvestmentTreeHelper', 'AppConstants','ModalService', function ($scope, $state, toastr, InvestmentTreeHelper, AppConstants, ModalService) {
 
         var $ctrl = this;
 
-
+        window.myCtrl = $ctrl;
 
         let expectedServiceTabs = [
             '_property',
@@ -68,28 +68,60 @@
         function readFileSheetName(files) {
             let sheetNameMap = {};
             async.eachSeries(files,  function (file, next) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    var data = e.target.result;
-                    var workbook;
-                    try {
-                        workbook = XLSX.read(data, {type: 'binary'});
-                        if (workbook && Array.isArray(workbook.SheetNames)) {
-                            workbook.SheetNames.forEach(function (sheetName) {
-                                sheetNameMap[sheetName.toLowerCase()] = true;
-                            });
+
+                if(/\.txt$/i.test(file.name) ||  /\.csv/i.test(file.name)){
+                    ModalService.showXlsxImportEditorWizard({file:file}).then(function (modifiedFile) {
+                        let fIndex = $ctrl.serviceFile.findIndex((_file => _file === file));
+                        $ctrl.serviceFile.splice(fIndex, 1, modifiedFile);
+                        let reader = new FileReader();
+                        reader.onload = function (e) {
+                            var data = e.target.result;
+                            var workbook;
+                            try {
+                                workbook = XLSX.read(data, {type: 'binary'});
+                                if (workbook && Array.isArray(workbook.SheetNames)) {
+                                    workbook.SheetNames.forEach(function (sheetName) {
+                                        sheetNameMap[sheetName.toLowerCase()] = true;
+                                    });
+                                }
+                                next(null);
+
+                            } catch (ex) {
+                                var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
+                                console.log(message);
+                                next(null);
+                            }
+
+                        };
+                        reader.readAsBinaryString(modifiedFile);
+                    }, function (ex) {
+                        console.log(ex);
+                        next(null);
+                    });
+                } else {
+                    let reader = new FileReader();
+                    reader.onload = function (e) {
+                        var data = e.target.result;
+                        var workbook;
+                        try {
+                            workbook = XLSX.read(data, {type: 'binary'});
+                            if (workbook && Array.isArray(workbook.SheetNames)) {
+                                workbook.SheetNames.forEach(function (sheetName) {
+                                    sheetNameMap[sheetName.toLowerCase()] = true;
+                                });
+                            }
+                            next(null);
+
+                        } catch (ex) {
+                            var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
+                            console.log(message);
+                            next(null);
                         }
-                        next(null);
 
-                    } catch (ex) {
-                        var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
-                        console.log(message);
-                        next(null);
-                    }
+                    };
+                    reader.readAsBinaryString(file);
+                }
 
-                };
-
-                reader.readAsBinaryString(file);
 
             }, function () {
 

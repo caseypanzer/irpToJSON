@@ -26,44 +26,53 @@ appSrc.unshift('babel-polyfill');
 
 module.exports = {
     entry: {
-        app: appSrc
+        app     : appSrc
     },
-    module: {
-        loaders: [{
-            test: /\.(css)$/,
-            use: [
+    target: 'web',
+    module                    : {
+        loaders               : [{
+            test              : /\.(css)$/,
+            use               : [
                 {
-                    loader: 'style-loader'
+                    loader    : 'style-loader'
                 },
                 {
-                    loader: 'css-loader'
+                    loader    : 'css-loader'
                 }
             ]
         },{
-            test: /\.svg$/,
-            loader: 'svg-inline-loader'
+            test              : /\.svg$/,
+            loader            : 'svg-inline-loader'
         },{
-            test: /\.(eot|svg|ttf|woff|woff2)$/,
-            loader: 'file-loader?name=/fonts/[name].[ext]'
+            test              : /\.(eot|svg|ttf|woff|woff2)$/,
+            loader            : 'file-loader?name=/fonts/[name].[ext]'
         },{
-            test: /\.js?$/,
-            include: path.join(__dirname, '../public/js'),
-            loader: "babel-loader"
-        }]
+            test              : /\.js?$/,
+            include           : path.join(__dirname, '../public/js'),
+            exclude           : /(node_modules|bower_components)/,
+            loader            : "babel-loader"
+        }],
+        noParse: [/jszip.js$/]
     },
-    plugins: [
+    plugins                   : [
         new CleanWebpackPlugin(['../public/dist']),
         new ExtractTextPlugin('[name].css'),
         new webpack.ProvidePlugin({
-            _: 'lodash',
-            'async': require('async'),
-            'moment': require('moment')
+            _                 : 'lodash',
+            'async'           : require('async'),
+            'moment'          : require('moment'),
+            'XLSX'            :  require('XLSX')
         }),
         new webpack.optimize.ModuleConcatenationPlugin()
     ],
     output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, '../public/dist'),
-        publicPath: '/dist'
+        filename      : '[name].js',
+        path          : path.resolve(__dirname, '../public/dist'),
+        publicPath    : '/dist'
+    },
+    node: {
+        fs         : false,
+        process    : false,
+        Buffer     : true
     }
 };
