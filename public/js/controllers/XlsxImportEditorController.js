@@ -173,11 +173,11 @@
                     $ctrl.htmlTables.push({
                         sheetName : sheetName,
                         _html     :  $sce.trustAsHtml(_htmlStr),
-                        rows      :  XLSX.utils.sheet_to_row_object_array(wb["Sheets"][sheetName])
                     });
                 });
 
 
+                //rows      :  XLSX.utils.sheet_to_row_object_array(wb["Sheets"][sheetName])
                // var o = XLSX.write(wb, { bookType:'html', type: 'binary', editable:true});
                // document.getElementById('excel-table').outerHTML = o;
 
