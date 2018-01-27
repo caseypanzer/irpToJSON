@@ -21,7 +21,7 @@ try {
 
 
 appSrc.unshift('./public/js/vendors.js');
-appSrc.unshift('webpack-hot-middleware/client?http://localhost:4444/__webpack_hmr');
+//appSrc.unshift('webpack-hot-middleware/client?http://localhost:4444/__webpack_hmr');
 appSrc.unshift('babel-polyfill');
 
 module.exports = {
@@ -61,7 +61,7 @@ module.exports = {
             _                 : 'lodash',
             'async'           : require('async'),
             'moment'          : require('moment'),
-            'XLSX'            :  require('XLSX')
+            'XLSX'            :  require('xlsx')
         }),
         new webpack.optimize.ModuleConcatenationPlugin()
     ],

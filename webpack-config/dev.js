@@ -16,8 +16,7 @@ module.exports = merge(common, {
     plugins:[
         new HtmlWebpackPlugin({
         }),
-        new webpack.NamedModulesPlugin(),
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.NamedModulesPlugin()
     ],
     devServer: {
         contentBase: './dist'
