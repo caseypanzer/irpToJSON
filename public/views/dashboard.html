@@ -19,9 +19,9 @@
                     Drop or Select Servicer Setup File in .xlsx format
                     <div class="text-success" ng-repeat="_serviceFile in $ctrl.serviceFile track by $index">{{ _serviceFile.name }}</div>
                 </div>
-                <div class="row">
+                <div class="row available-service-container">
                     <div class="col-perc-30"   ng-repeat="tab in $ctrl.availableServiceTabs">
-                        <div class="alert  bordered margin-10" ng-class="{ 'alert-success': tab.isAvailable }"> {{ tab.name }}</div> </div>
+                        <div class="alert  bordered" ng-class="{ 'alert-success': tab.isAvailable }"> <span>{{ tab.name }}</span></div> </div>
                 </div>
             </div>
             <div class="col-perc-100 margin-top-10" ng-if="$ctrl.loanFile && $ctrl.serviceFile">

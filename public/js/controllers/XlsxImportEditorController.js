@@ -169,6 +169,7 @@
                     //console.log('data', XLSX.utils.aoa_to_sheet(wb["Sheets"][sheetName]));
                     let  _htmlStr = XLSX.write(wb, { sheetName : sheetName, bookType:'html', type: 'binary', editable:true});
                     _htmlStr = _htmlStr.replace('<html><body>', '');
+                    _htmlStr = _htmlStr.replace('<table>', '<table class="table table-condensed">');
                     _htmlStr = _htmlStr.replace('</html></body>', '');
                     $ctrl.htmlTables.push({
                         sheetName : sheetName,
