@@ -7,7 +7,7 @@
     'use strict';
 
     var module = angular.module('IrpToJsonViewer');
-    var XLSX  = require('XLSX');
+    var XLSX  = require('xlsx');
     var async = require('async');
 
     /**
