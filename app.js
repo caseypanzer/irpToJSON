@@ -21,7 +21,7 @@ const express = require('express'),
     helmet = require('helmet'),
     multer = require('multer'),
     upload = multer({dest: "server/uploads/"}),
-    webpack = require('webpack'),
+    //webpack = require('webpack'),
     webPackconfig = require('./webpack.config');
 
 let uploadMiddleWare = upload.fields([{name: 'loanFile', maxCount: 1}, {name: 'serviceFile', maxCount: 1}]);
@@ -54,6 +54,7 @@ const webpackOptions = {
 
 //webpackDevServer.addDevServerEntrypoints(config, webpackOptions);
 
+/*
 let compiler = webpack(webPackconfig);
 app.use(require('webpack-dev-middleware')(compiler, {
     noInfo: true,
@@ -61,6 +62,7 @@ app.use(require('webpack-dev-middleware')(compiler, {
 }));
 
 app.use(require('webpack-hot-middleware')(compiler));
+*/
 
 
 app.post('/api/files/upload', uploadMiddleWare, function (req, res, next) {
