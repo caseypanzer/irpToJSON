@@ -1,3 +1,30 @@
+.instructions {
+  text-align: center;
+  margin: 0 auto;
+  font-weight: bold;
+  margin-top: 20px;
+  padding-bottom: 20px;
+}
+
+.modal-body {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.btn-upload {
+  background-color: blue;
+}
+
+.drag-text {
+  color: #D1D1D1;
+}
+
+
+h4 {
+  text-align: center;
+  margin: 0 auto;
+}
+
 .form-signin {
     max-width: 330px;
     padding: 15px;
@@ -468,6 +495,10 @@ table td.selected, table tr.selected td {
     border:1px solid gray;
 }
 
+.available-service-container {
+  margin: 0 auto !important;
+  text-align: center !important;
+}
 
 .available-service-container .alert{
     padding: 5px;

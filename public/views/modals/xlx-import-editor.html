@@ -3,21 +3,25 @@
         <h4 class="modal-title" ng-if="title">Edit {{ $ctrl.contextFile.name }}</h4>
     </div>
     <div class="modal-body">
-        <h4  ng-if="$ctrl.contextFile.name">{{ $ctrl.contextFile.name }} was not a valid xlsx type file. Therefore it need to be correct to the valid file type. Once the processing is done please make sure  to edit the  sheet names.</h4>
+        <h4  ng-if="$ctrl.contextFile.name">{{ $ctrl.contextFile.name }} is not in the correct file format (.xlsx). </h4>
+        <div class="instructions">
+          Choose the correct and corresponding sheet name from the dropdown menu below and then click Submit. <br>
+          We take care of the rest!
+        </div>
         <div ng-if="$ctrl.isProcessing">Processing File <tiny-spinner></tiny-spinner>  </div>
         <div ng-repeat="table in $ctrl.htmlTables">
             <form class="form-inline">
                 <div class="form-group">
                     <label for="sheetName">Sheet Name</label>
                     <select class="form-control"  id="sheetName" ng-model="table.sheetName" required>
-                        <option value="">Please Select Sheet name</option>
+                        <option value="">Please select sheet name</option>
                         <option ng-value="sheet" ng-repeat="sheet in $ctrl.sheetNameOptions">{{ sheet }}</option>
                     </select>
                 </div>
             </form>
-            <div class="table-responsive" style="height: 500px;">
+            <!-- <div class="table-responsive" style="height: 500px;">
 
-               <span ng-bind-html="table._html"></span>
+               <span ng-bind-html="table._html"></span> -->
 
                <!-- <table class="table table-condensed">
                     <tbody>
@@ -28,7 +32,7 @@
                         </tr>
                     </tbody>
                 </table>-->
-            </div>
+            <!-- </div> -->
         </div>
     </div>
     <div class="modal-footer">
