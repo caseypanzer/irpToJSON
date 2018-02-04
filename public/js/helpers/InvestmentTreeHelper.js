@@ -2,45 +2,47 @@
  * Created by sajibsarkar on 11/26/17.
  */
 
-
-(function () {
+(function() {
     'use strict';
 
     let module = angular.module('IrpToJsonViewer');
 
-    let otherPropertyKeys = ['tccomparativefinancialstatusirp',
+    let otherPropertyKeys = [
+        'tccomparativefinancialstatusirp',
         'rptddelinquentloanstatus',
         'rptmhistoricalloanmod',
         'rptrsvloc',
-       // 'rptreostatus',
+        // 'rptreostatus',
         'rptwservicerwatchlistirp',
         //'tlr',
-        'rptadvrecovery'];
+        'rptadvrecovery'
+    ];
 
-
-    //console.log('otherPropertyKeys', otherPropertyKeys);
-    module.factory('InvestmentTreeHelper', [function () {
-        return {
-            buildTree:  function (data) {
-                let treeData = [];
-                if (Array.isArray(data)) {
-                    data.forEach(function (investment) {
-                        let investmentNode = _prepareInvestmentNode(investment);
-                        treeData.push(investmentNode);
-                    });
+    module.factory('InvestmentTreeHelper', [
+        function() {
+            return {
+                buildTree: function(data) {
+                    let treeData = [];
+                    if (Array.isArray(data)) {
+                        data.forEach(function(investment) {
+                            let investmentNode = _prepareInvestmentNode(
+                                investment
+                            );
+                            treeData.push(investmentNode);
+                        });
+                    }
+                    return treeData;
                 }
-                return treeData;
-            }
+            };
         }
-    }]);
+    ]);
 
     /***
      * Private methods
      */
-    function _prepareChildrenNode (data, params){
-
-        let  propertyName = params.propertyName;
-        let  nodeName = params.nodeName || propertyName;
+    function _prepareChildrenNode(data, params) {
+        let propertyName = params.propertyName;
+        let nodeName = params.nodeName || propertyName;
         let grandNode = {
             text: nodeName,
             children: []
@@ -48,14 +50,14 @@
 
         if (Array.isArray(data)) {
             let dataGroupedByProperty = _.groupBy(data, propertyName);
-            Object.keys(dataGroupedByProperty).forEach(function (keyName) {
+            Object.keys(dataGroupedByProperty).forEach(function(keyName) {
                 let dataItemNode = {
-                    text     : keyName,
-                    children : [],
-                    icon     : 'none'
+                    text: keyName,
+                    children: [],
+                    icon: 'none'
                 };
-                dataGroupedByProperty[keyName].forEach(function (dataItem) {
-                    for (let  key in  dataItem){
+                dataGroupedByProperty[keyName].forEach(function(dataItem) {
+                    for (let key in dataItem) {
                         let activeItemNode = {
                             text: [key, dataItem[key]].join(' : '),
                             icon: 'none',
@@ -76,49 +78,96 @@
             text: 'LineItems',
             children: []
         };
+
+        for (let key  in _financial.lineItems){
+
+            let grandLineitemCategoryNode = {
+                text      : key,
+                children  : []
+            };
+
+            for(let stmtTypeKey in _financial.lineItems[key]){
+
+                let lineItemNode = {
+                    text      : stmtTypeKey,
+                    children  : []
+                };
+
+                _.forEach(_financial.lineItems[key][stmtTypeKey], function (nodeItem) {
+                    Object.keys(nodeItem).forEach(function(dataKey) {
+                        if (!Array.isArray(nodeItem[dataKey])) {
+                            var _nodeItem = {
+                                text: [dataKey, nodeItem[dataKey]].join(
+                                    ' : '
+                                ),
+                                icon: 'none'
+                            };
+                            lineItemNode.children.push(_nodeItem);
+                        }
+                    });
+                });
+                grandLineitemCategoryNode.children.push(lineItemNode);
+            }
+            grandLineItemNode.children.push(grandLineitemCategoryNode);
+        }
+
+        /*
+
         if (Array.isArray(_financial.lineItems)) {
-            _financial.lineItems = _financial.lineItems.map(function (item) {
-                if(item.startDate){
+            _financial.lineItems = _financial.lineItems.map(function(item) {
+                if (item.startDate) {
                     item.startDate = new Date(item.startDate);
                 }
-                if(item.endDate){
+                if (item.endDate) {
                     item.endDate = new Date(item.endDate);
                 }
                 return item;
             });
-            let lineItemsGroup = _.groupBy(_financial.lineItems, 'categoryCode');
-            Object.keys(lineItemsGroup).forEach(function (lineItemGroupKey) {
-                let lineItemNode = _prepareChildrenNode(lineItemsGroup[lineItemGroupKey],
-                    { nodeName : lineItemGroupKey,
-                    propertyName  : 'stmtType' });
+            let lineItemsGroup = _.groupBy(
+                _financial.lineItems,
+                'categoryCode'
+            );
+            Object.keys(lineItemsGroup).forEach(function(lineItemGroupKey) {
+                let lineItemNode = _prepareChildrenNode(
+                    lineItemsGroup[lineItemGroupKey], {
+                        nodeName: lineItemGroupKey,
+                        propertyName: 'stmtType'
+                    }
+                );
                 grandLineItemNode.children.push(lineItemNode);
             });
         }
+        */
+
         return grandLineItemNode;
     }
 
     function _prepareFinancialNodes(property) {
-
         let grandFinancialNode = {
             text: 'Financials',
             children: []
         };
 
         if (Array.isArray(property.financials)) {
-            property.financials.map(function (_financial) {
-                if(_financial.startDate){
+            property.financials.map(function(_financial) {
+                if (_financial.startDate) {
                     _financial.startDate = new Date(_financial.startDate);
                 }
-                if(_financial.endDate){
+                if (_financial.endDate) {
                     _financial.endDate = new Date(_financial.endDate);
                 }
                 let financialNode = {
                     text: _financial.startDate,
                     children: []
                 };
-                Object.keys(_financial).forEach(function (financeKey) {
+                Object.keys(_financial).forEach(function(financeKey) {
                     if (!Array.isArray(_financial[financeKey])) {
-                        let _financeNodeItem = {text: [financeKey, _financial[financeKey]].join(' : '), icon: 'none'};
+                        let _financeNodeItem = {
+                            text: [financeKey, _financial[financeKey]].join(
+                                ' : '
+                            ),
+                            icon: 'none'
+                        };
                         financialNode.children.push(_financeNodeItem);
                     }
                 });
@@ -132,24 +181,24 @@
     }
 
     function _preparePropertiesNode(investment) {
-
         let grandPropertiesNode = {
             text: 'Properties',
             children: []
         };
 
         if (Array.isArray(investment.properties)) {
-
-           // console.log('investment.properties',investment.loanId, investment.properties.length);
-            investment.properties.forEach(function (property) {
+            investment.properties.forEach(function(property) {
                 let propertiesNode = {
                     text: property.propertyId,
                     children: []
                 };
 
-                  Object.keys(property).forEach(function (propKey) {
+                Object.keys(property).forEach(function(propKey) {
                     if (!Array.isArray(property[propKey])) {
-                        let propNodeItem = {text: [propKey, property[propKey]].join(' : '), icon: 'none'};
+                        let propNodeItem = {
+                            text: [propKey, property[propKey]].join(' : '),
+                            icon: 'none'
+                        };
                         propertiesNode.children.push(propNodeItem);
                     }
                 });
@@ -158,20 +207,31 @@
                     text: 'rptreostatus',
                     children: []
                 };
-                if(Array.isArray(property.rptreostatus)){
-                   // console.log('property.rptreostatus', property.rptreostatus);
-                    let rptreostatusByDates = _.groupBy(property.rptreostatus, function (item) {
-                        return new Date(item.startDate).toDateString();
-                    });
-                    Object.keys(rptreostatusByDates).forEach(function (__keyName) {
+                if (Array.isArray(property.rptreostatus)) {
+                    let rptreostatusByDates = _.groupBy(
+                        property.rptreostatus,
+                        function(item) {
+                            return new Date(item.startDate).toDateString();
+                        }
+                    );
+                    Object.keys(rptreostatusByDates).forEach(function(
+                        __keyName
+                    ) {
                         let rptreostatusNode = {
                             text: __keyName,
                             children: []
                         };
-                        rptreostatusByDates[__keyName].forEach(function (dataItem) {
-                            Object.keys(dataItem).forEach(function (dataKey) {
+                        rptreostatusByDates[__keyName].forEach(function(
+                            dataItem
+                        ) {
+                            Object.keys(dataItem).forEach(function(dataKey) {
                                 if (!Array.isArray(dataItem[dataKey])) {
-                                    var _nodeItem = {text: [dataKey, dataItem[dataKey]].join(' : '), icon: 'none'};
+                                    var _nodeItem = {
+                                        text: [dataKey, dataItem[dataKey]].join(
+                                            ' : '
+                                        ),
+                                        icon: 'none'
+                                    };
                                     rptreostatusNode.children.push(_nodeItem);
                                 }
                             });
@@ -182,146 +242,168 @@
                 let grandFinancialNode = _prepareFinancialNodes(property);
                 propertiesNode.children.push(grandFinancialNode);
                 grandPropertiesNode.children.push(propertiesNode);
-                if(grandRptreostatusNode.children.length >0 ){
+                if (grandRptreostatusNode.children.length > 0) {
                     propertiesNode.children.push(grandRptreostatusNode);
                 }
-
             });
         }
         return grandPropertiesNode;
     }
 
     function _prepareOtherPropertyNode(investment, otherPropertyKeys) {
+        let _otherGrandNodes = [];
 
+        let uniqDates = [];
 
-        let _otherGrandNodes =[];
-
-        let  uniqDates = [];
-
-        otherPropertyKeys.forEach(function (_otherPropertyKey) {
-            if(Array.isArray(investment[_otherPropertyKey]) &&  investment[_otherPropertyKey].length >  0){
-                investment[_otherPropertyKey] = investment[_otherPropertyKey].map(function (item) {
-                    if (item.startDate){
-                        item.startDate = new Date(item.startDate).toDateString();
-                        if(uniqDates.indexOf(item.startDate) === -1){
+        otherPropertyKeys.forEach(function(_otherPropertyKey) {
+            if (
+                Array.isArray(investment[_otherPropertyKey]) &&
+                investment[_otherPropertyKey].length > 0
+            ) {
+                investment[_otherPropertyKey] = investment[
+                    _otherPropertyKey
+                ].map(function(item) {
+                    if (item.startDate) {
+                        item.startDate = new Date(
+                            item.startDate
+                        ).toDateString();
+                        if (uniqDates.indexOf(item.startDate) === -1) {
                             uniqDates.push(item.startDate);
                         }
                     }
                     return item;
                 });
-
             }
         });
 
-        uniqDates = _.sortBy(uniqDates, item => new  Date(item));
-        uniqDates.forEach(function (_dtStr) {
+        uniqDates = _.sortBy(uniqDates, item => new Date(item));
+        uniqDates.forEach(function(_dtStr) {
             let dateNode = {
                 text: _dtStr,
                 children: []
             };
-            /**
-             * tccomparativefinancialstatusirp -> propertyId
-             rptRsvLOC -> reserveAccountType
-             rptwservicerwatchlistirp-> Trigger Codes
-             rptddelinquentloanstatus -> paidThroughDate
-             tccomparativefinancialstatusirp->Prospectus ID
-             */
 
-            otherPropertyKeys.forEach(function (_otherPropertyKey) {
-
+            otherPropertyKeys.forEach(function(_otherPropertyKey) {
                 let otherPropertyNode = {
                     text: _otherPropertyKey,
                     children: []
                 };
 
-                if(Array.isArray(investment[_otherPropertyKey]) && investment[_otherPropertyKey].length > 0){
-                    let otherDataByDateAndPropertyKey = investment[_otherPropertyKey].filter(function (data) {
-                       return data.startDate && data.startDate ===  _dtStr;
+                if (
+                    Array.isArray(investment[_otherPropertyKey]) &&
+                    investment[_otherPropertyKey].length > 0
+                ) {
+                    let otherDataByDateAndPropertyKey = investment[
+                        _otherPropertyKey
+                    ].filter(function(data) {
+                        return data.startDate && data.startDate === _dtStr;
                     });
 
-                    let  otherPropertyGroupedData;
+                    let otherPropertyGroupedData;
                     let otherPropertyGroupedKey;
 
-                    switch (_otherPropertyKey){
-                        case  'tccomparativefinancialstatusirp' :   otherPropertyGroupedKey =  'propertyId';
-                                                                    break;
-                        case  'rptrsvloc' :
-                            otherPropertyGroupedKey =  'reserveAccountType';
+                    switch (_otherPropertyKey) {
+                        case 'tccomparativefinancialstatusirp':
+                            otherPropertyGroupedKey = 'propertyId';
                             break;
-                        case  'rptwservicerwatchlistirp' :   otherPropertyGroupedKey =  'triggerCodes';
+                        case 'rptrsvloc':
+                            otherPropertyGroupedKey = 'reserveAccountType';
                             break;
-                            case  'rptddelinquentloanstatus' :   otherPropertyGroupedKey =  'paidThroughDate';
+                        case 'rptwservicerwatchlistirp':
+                            otherPropertyGroupedKey = 'triggerCodes';
                             break;
-                        case  'tccomparativefinancialstatusirp' :   otherPropertyGroupedKey =  'prospectusId';
+                        case 'rptddelinquentloanstatus':
+                            otherPropertyGroupedKey = 'paidThroughDate';
                             break;
-
+                        case 'tccomparativefinancialstatusirp':
+                            otherPropertyGroupedKey = 'prospectusId';
+                            break;
                     }
 
-                    if(otherPropertyGroupedKey){
-                        otherPropertyGroupedData = _.groupBy(otherDataByDateAndPropertyKey, otherPropertyGroupedKey);
+                    if (otherPropertyGroupedKey) {
+                        otherPropertyGroupedData = _.groupBy(
+                            otherDataByDateAndPropertyKey,
+                            otherPropertyGroupedKey
+                        );
 
-                        Object.keys(otherPropertyGroupedData).forEach(function (otherPropertyGroupedKeyName) {
+                        Object.keys(otherPropertyGroupedData).forEach(function(
+                            otherPropertyGroupedKeyName
+                        ) {
                             let _groupedNode = {
                                 text: otherPropertyGroupedKeyName,
                                 children: []
                             };
-                            otherPropertyGroupedData[otherPropertyGroupedKeyName].forEach(function (dataItem) {
-                                Object.keys(dataItem).forEach(function (propKey) {
+                            otherPropertyGroupedData[
+                                otherPropertyGroupedKeyName
+                            ].forEach(function(dataItem) {
+                                Object.keys(dataItem).forEach(function(
+                                    propKey
+                                ) {
                                     if (!Array.isArray(dataItem[propKey])) {
-                                        let dataNode = {text: [propKey, dataItem[propKey]].join(' : '), icon: 'none'};
-                                        //console.log(investment.loanId, dataNode);
+                                        let dataNode = {
+                                            text: [
+                                                propKey,
+                                                dataItem[propKey]
+                                            ].join(' : '),
+                                            icon: 'none'
+                                        };
                                         _groupedNode.children.push(dataNode);
                                     }
                                 });
                             });
                             otherPropertyNode.children.push(_groupedNode);
                         });
-
                     } else {
-
-                        otherDataByDateAndPropertyKey.forEach(function (dataItem) {
-                            Object.keys(dataItem).forEach(function (propKey) {
+                        otherDataByDateAndPropertyKey.forEach(function(
+                            dataItem
+                        ) {
+                            Object.keys(dataItem).forEach(function(propKey) {
                                 if (!Array.isArray(dataItem[propKey])) {
-                                    let dataNode = {text: [propKey, dataItem[propKey]].join(' : '), icon: 'none'};
-                                    //console.log(investment.loanId, dataNode);
+                                    let dataNode = {
+                                        text: [propKey, dataItem[propKey]].join(
+                                            ' : '
+                                        ),
+                                        icon: 'none'
+                                    };
                                     otherPropertyNode.children.push(dataNode);
                                 }
                             });
                         });
-
                     }
-
-
-
                 }
                 dateNode.children.push(otherPropertyNode);
             });
             _otherGrandNodes.push(dateNode);
         });
-        return  _otherGrandNodes;
+        return _otherGrandNodes;
     }
 
     function _prepareInvestmentNode(investment) {
-
         let investmentNode = {
             text: investment.loanId,
             children: []
         };
 
-        Object.keys(investment).forEach(function (key) {
+        Object.keys(investment).forEach(function(key) {
             if (!Array.isArray(investment[key])) {
-                var nodeItem = {text: [key, investment[key]].join(' : '), icon: 'none'};
+                var nodeItem = {
+                    text: [key, investment[key]].join(' : '),
+                    icon: 'none'
+                };
                 investmentNode.children.push(nodeItem);
             }
         });
 
         let grandPropertiesNode = _preparePropertiesNode(investment);
         investmentNode.children.push(grandPropertiesNode);
-        let _otherPropertyNode = _prepareOtherPropertyNode(investment, otherPropertyKeys);
-        if(Array.isArray(_otherPropertyNode)){
-            _otherPropertyNode.forEach(function (_node) {
+        let _otherPropertyNode = _prepareOtherPropertyNode(
+            investment,
+            otherPropertyKeys
+        );
+        if (Array.isArray(_otherPropertyNode)) {
+            _otherPropertyNode.forEach(function(_node) {
                 investmentNode.children.push(_node);
-            })
+            });
         }
 
         return investmentNode;

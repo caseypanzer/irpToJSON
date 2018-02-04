@@ -185,11 +185,12 @@
                     success: function (resp) {
                        // console.log(resp);
                         $ctrl.investments = resp.Investments;
+                        $ctrl.treeJsonData = InvestmentTreeHelper.buildTree(resp.Investments);
                         $('#investmentTreeView').jstree({
                             'core': {
                                 data      : { text: 'Investments',
                                     state     : { opened    : true},
-                                    children  : InvestmentTreeHelper.buildTree(resp.Investments)
+                                    children  :  $ctrl.treeJsonData
                                 }
                             }
                         });
@@ -207,7 +208,11 @@
 
 
         $ctrl.downloadJson=function () {
-            var file = new Blob([ JSON.stringify($ctrl.investments, null, 4) ], {
+
+            let data = $ctrl.investments;
+
+            //InvestmentJsonFormatHelper.formatDownloadableJson($ctrl.investments);
+            var file = new Blob([ JSON.stringify(data, null, 4) ], {
                 type : 'application/json'
             });
             var fileURL = URL.createObjectURL(file);

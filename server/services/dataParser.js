@@ -55,7 +55,7 @@ module.exports.processInputFiles = function (params) {
 
                 if(Array.isArray(_financeDataCollection)){
                     _financeDataCollection.forEach(function (_financeData) {
-                       // console.log('Object.keys(_financeData)', Object.keys(_financeData));
+                      // console.log('Object.keys(_financeData)', Object.keys(_financeData));
                         Object.keys(_financeData).forEach(function (_keyName) {
                             if(!allFinanceData[_keyName]){
                                 allFinanceData[_keyName] = [];
@@ -116,20 +116,34 @@ module.exports.processInputFiles = function (params) {
                                 });
 
                                 groupedKeys.forEach(function (keyItem) {
-                                    //console.log(keyItem);
+
                                     let newFinancialItem= {
-                                        lineItems : []
+                                        lineItems : {}
                                     };
+                                    let lineItems = [];
                                     let  splittedItem = keyItem.split('##');
                                     newFinancialItem.startDate = splittedItem[0];
                                     newFinancialItem.endDate = splittedItem[1];
                                     _financialDataGrouped[keyItem].forEach(function (__item) {
-                                        newFinancialItem.lineItems.push(__item);
+                                        lineItems.push(__item);
                                         if(__item.propertyId &&  !newFinancialItem.propertyId){
                                             newFinancialItem.propertyId = __item.propertyId;
                                         }
                                     });
 
+                                    let lineItemsByCatCode = _.groupBy(lineItems, 'categoryCode');
+                                    let newLineItem = {};
+                                    for (let key  in lineItemsByCatCode){
+                                        newLineItem[key] = {};
+                                        let lineItemsByStmtType = _.groupBy(lineItemsByCatCode[key], 'stmtType');
+                                        for (let stmtTyeKey in  lineItemsByStmtType){
+                                          newLineItem[key][stmtTyeKey] = lineItemsByStmtType[stmtTyeKey];
+                                        }
+                                    }
+                                    newFinancialItem.lineItems = newLineItem;
+
+                                   // console.log('lineItems', newFinancialItem.lineItems);
+                                   // newFinancialItem.lineItems = lineItems;
                                     if (!propertyItem.financials){
                                         propertyItem.financials = [];
                                     }
