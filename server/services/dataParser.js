@@ -131,14 +131,10 @@ module.exports.processInputFiles = function (params) {
                                         }
                                     });
 
-                                    let lineItemsByCatCode = _.groupBy(lineItems, 'categoryCode');
                                     let newLineItem = {};
-                                    for (let key  in lineItemsByCatCode){
-                                        newLineItem[key] = {};
-                                        let lineItemsByStmtType = _.groupBy(lineItemsByCatCode[key], 'stmtType');
-                                        for (let stmtTyeKey in  lineItemsByStmtType){
-                                          newLineItem[key][stmtTyeKey] = lineItemsByStmtType[stmtTyeKey];
-                                        }
+                                    let lineItemsByStmtType = _.groupBy(lineItems, 'stmtType');
+                                    for (let stmtTyeKey in  lineItemsByStmtType){
+                                        newLineItem[stmtTyeKey] = lineItemsByStmtType[stmtTyeKey];
                                     }
                                     newFinancialItem.lineItems = newLineItem;
 

@@ -79,21 +79,15 @@
             children: []
         };
 
-        for (let key  in _financial.lineItems){
 
-            let grandLineitemCategoryNode = {
-                text      : key,
-                children  : []
-            };
-
-            for(let stmtTypeKey in _financial.lineItems[key]){
+            for(let stmtTypeKey in _financial.lineItems){
 
                 let lineItemNode = {
                     text      : stmtTypeKey,
                     children  : []
                 };
 
-                _.forEach(_financial.lineItems[key][stmtTypeKey], function (nodeItem) {
+                _.forEach(_financial.lineItems[stmtTypeKey], function (nodeItem) {
                     Object.keys(nodeItem).forEach(function(dataKey) {
                         if (!Array.isArray(nodeItem[dataKey])) {
                             var _nodeItem = {
@@ -106,10 +100,9 @@
                         }
                     });
                 });
-                grandLineitemCategoryNode.children.push(lineItemNode);
+                grandLineItemNode.children.push(lineItemNode);
             }
-            grandLineItemNode.children.push(grandLineitemCategoryNode);
-        }
+
 
         /*
 
