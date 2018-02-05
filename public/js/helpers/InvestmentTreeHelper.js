@@ -170,7 +170,7 @@
                     children: []
                 };
                 Object.keys(_financial).forEach(function(financeKey) {
-                    if (!Array.isArray(_financial[financeKey])) {
+                    if (financeKey !=='lineItems' && !Array.isArray(_financial[financeKey])) {
                         let _financeNodeItem = {
                             text: [financeKey, _financial[financeKey]].join(
                                 ' : '
