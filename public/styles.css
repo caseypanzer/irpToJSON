@@ -1,18 +1,41 @@
-.instructions {
-  text-align: center;
-  margin: 0 auto;
-  font-weight: bold;
-  margin-top: 20px;
-  padding-bottom: 20px;
+.pull-right{
+  float: right;
 }
 
+.pull-left{
+  float: left;
+}
+hr{
+  margin: 0px !important;
+}
+
+.large-font{
+  font-size: 18px !important;
+}
+
+.padding-left-15{
+  padding-left: 15px !important;
+}
+
+.drop-box {
+    background: #F8F8F8;
+    border: 5px dashed #DDD;
+    text-align: center;
+    padding: 5px 0px !important;
+    height: 80px !important;
+    /*margin-left: 10px;*/
+}
+
+.drop-box.dragover {
+    border: 5px dashed #3c763d;
+}
+
+.ta-center{
+    text-align: center !important;
+}
 .modal-body {
   margin: 0 auto;
   text-align: center;
-}
-
-.btn-upload {
-  background-color: blue;
 }
 
 .drag-text {
@@ -476,17 +499,7 @@ table td.selected, table tr.selected td {
 .row .col-perc-100 {
     width: 100%;
 }
-.drop-box {
-    background: #F8F8F8;
-    border: 5px dashed #DDD;
-    text-align: center;
-    padding: 50px 10px;
-    margin-left: 10px;
-}
 
-.drop-box.dragover {
-    border: 5px dashed #3c763d;
-}
 
 .pointer {
     cursor: pointer;
