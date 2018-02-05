@@ -19,6 +19,9 @@
 
         window.myCtrl = $ctrl;
 
+        $ctrl.loanFile;
+        $ctrl.serviceFile=[];
+
         let expectedServiceTabs = [
             '_property',
             '_financial',
@@ -48,11 +51,28 @@
 
         $ctrl.investments = undefined;
 
+
+
         getAvaileAbleServiceTab();
 
-        $scope.$watch('$ctrl.serviceFile', function (newVal, oldVal) {
+
+        $scope.$watch('$ctrl.loanFilePlaceHolder', function (newVal, oldVal) {
             if(newVal !==  oldVal){
-                setTimeout(adjustAvailableTabs, 10)
+              if(newVal){
+                  $ctrl.loanFile = newVal;
+              }
+            }
+        });
+
+        $scope.$watch('$ctrl.serviceFilePlaceHolder', function (newVal, oldVal) {
+            if(newVal !==  oldVal){
+                if(newVal && newVal.length >  0){
+                    newVal.forEach(function (_newFile) {
+                        $ctrl.serviceFile.push(_newFile);
+                    });
+                    setTimeout(adjustAvailableTabs, 10);
+                }
+
             }
         });
 
@@ -62,6 +82,8 @@
             readFileSheetName($ctrl.serviceFile);
             $scope.$applyAsync();
         }
+
+
 
 
 

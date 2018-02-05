@@ -8,7 +8,6 @@
 
     var module = angular.module("IrpToJsonViewer", ['ui.router', 'ui.bootstrap', 'ui.bootstrap.tpls', 'ui.bootstrap.modal', 'ngResource', 'toastr', 'ngSanitize', 'ngFileUpload']);
 
-
     require('bootstrap/dist/css/bootstrap.min.css');
     require('angular-toastr/dist/angular-toastr.css');
     require('ionicons/dist/css/ionicons.css');

@@ -11,9 +11,9 @@
           <div class="text-success">&nbsp;{{$ctrl.loanFile.name}}</div>
         </div>
         <div class="col-perc-30">
-            <div ngf-select ng-model="$ctrl.loanFile" class="drop-box"
-                 ngf-drag-over-class="'dragover'" ngf-multiple="false"
-                 ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
+            <div ngf-select ng-model="$ctrl.loanFilePlaceHolder" class="drop-box"
+                 ngf-drag-over-class="'dragover'"ngf-drop ngf-multiple="false"
+                 ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: true, debounce: 0}"
                  ngf-pattern="*">
                  <div class="">
                   Drop .xls File Here
@@ -35,9 +35,9 @@
           <div class="text-success" ng-repeat="_serviceFile in $ctrl.serviceFile track by $index">{{ _serviceFile.name }}</div>
         </div>
         <div class="col-perc-30">
-          <div ngf-select ng-model="$ctrl.serviceFile" class="drop-box"
-               ngf-drag-over-class="'dragover'" ngf-multiple="true"
-               ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: false, debounce: 0}"
+          <div ngf-select ng-model="$ctrl.serviceFilePlaceHolder" class="drop-box"
+               ngf-drag-over-class="'dragover'"  ngf-drop ngf-multiple="true"
+               ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: true, debounce: 0}"
                ngf-pattern="*">
                  <div class="">
                   Drop .xls File Here
