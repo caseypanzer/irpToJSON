@@ -87,19 +87,35 @@
                     children  : []
                 };
 
-                _.forEach(_financial.lineItems[stmtTypeKey], function (nodeItem) {
-                    Object.keys(nodeItem).forEach(function(dataKey) {
-                        if (!Array.isArray(nodeItem[dataKey])) {
-                            var _nodeItem = {
-                                text: [dataKey, nodeItem[dataKey]].join(
-                                    ' : '
-                                ),
-                                icon: 'none'
-                            };
-                            lineItemNode.children.push(_nodeItem);
-                        }
-                    });
+
+                let lineItemsByCategoryCode = _.groupBy(_financial.lineItems[stmtTypeKey], 'categoryCode');
+
+
+                _.sortBy(Object.keys(lineItemsByCategoryCode)).forEach(function (catKey) {
+                        let lineItemCatNode = {
+                            text      : catKey,
+                            children  : []
+                        };
+
+                        _.forEach(lineItemsByCategoryCode[catKey], function (nodeItem) {
+                            Object.keys(nodeItem).forEach(function(dataKey) {
+                                if (!Array.isArray(nodeItem[dataKey])) {
+                                    var _nodeItem = {
+                                        text: [dataKey, nodeItem[dataKey]].join(
+                                            ' : '
+                                        ),
+                                        icon: 'none'
+                                    };
+                                    lineItemCatNode.children.push(_nodeItem);
+                                }
+                            });
+
+                        });
+                        lineItemNode.children.push(lineItemCatNode);
+
                 });
+
+
                 grandLineItemNode.children.push(lineItemNode);
             }
 
