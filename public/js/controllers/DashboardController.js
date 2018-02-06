@@ -22,19 +22,8 @@
         $ctrl.loanFile;
         $ctrl.serviceFile=[];
 
-        let expectedServiceTabs = [
-            '_property',
-            '_financial',
-            'tCComparativeFinancialStatusIRP',
-            'rptDDelinquentLoanStatus',
-            'rptMHistoricalLoanMod',
-            'rptRsvLOC',
-            'rptREOStatus',
-            'rptWServicerWatchlistIRP',
-            'TLR',
-            'rptAdvRecovery'
-        ];
 
+        let expectedServiceTabs = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
 
         function getAvaileAbleServiceTab() {
             $ctrl.availableServiceTabs = expectedServiceTabs.reduce(function (memo, current) {
@@ -128,15 +117,49 @@
                         try {
                             workbook = XLSX.read(data, {type: 'binary'});
                             if (workbook && Array.isArray(workbook.SheetNames)) {
-                                workbook.SheetNames.forEach(function (sheetName) {
-                                    sheetNameMap[sheetName.toLowerCase()] = true;
-                                });
+                                if(!file.isSheetNameCheckingProcessed && !workbook.SheetNames.some(function (sheetName) {
+                                       return (expectedServiceTabs.indexOf(sheetName.toString().toLowerCase()) > -1);
+                                    })){
+                                    ModalService.showSheetNameEditorWizard({file:file}).then(function (modifiedFile) {
+                                        let fIndex = $ctrl.serviceFile.findIndex((_file => _file === file));
+                                        modifiedFile.isSheetNameCheckingProcessed = true;
+                                        $ctrl.serviceFile.splice(fIndex, 1, modifiedFile);
+                                        let reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            var data = e.target.result;
+                                            var workbook;
+                                            try {
+                                                workbook = XLSX.read(data, {type: 'binary'});
+                                                if (workbook && Array.isArray(workbook.SheetNames)) {
+                                                    workbook.SheetNames.forEach(function (sheetName) {
+                                                        sheetNameMap[sheetName.toLowerCase()] = true;
+                                                    });
+                                                }
+                                                next(null);
+
+                                            } catch (ex) {
+                                                var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
+                                                console.log(ex);
+                                                next(null);
+                                            }
+
+                                        };
+                                        reader.readAsBinaryString(modifiedFile);
+
+                                    });
+                                } else {
+                                    workbook.SheetNames.forEach(function (sheetName) {
+                                        sheetNameMap[sheetName.toLowerCase()] = true;
+                                    });
+                                    next(null);
+                                }
                             }
-                            next(null);
+
 
                         } catch (ex) {
+                            console.log(ex);
                             var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
-                            console.log(message);
+                            toastr.error(message);
                             next(null);
                         }
 

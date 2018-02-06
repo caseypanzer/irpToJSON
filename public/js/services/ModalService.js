@@ -59,6 +59,28 @@ module.factory('ModalService', [
                 });
 
                 return modalInstance.result;
+            },
+            showSheetNameEditorWizard:  function (params) {
+
+
+                var modalInstance = $modal.open({
+                    animation: true,
+                    templateUrl: '/views/modals/xlsx-sheet-names-import-editor.html',
+                    controller: 'XlsxSheetNameEditorController',
+                    controllerAs: '$ctrl',
+                    backdrop: true,
+                    size: 'lg',
+                    scope : $rootScope.$new(true),
+                    windowClass: 'xlsx-import-modal',
+                    resolve: {
+                        params: function () {
+                            return params;
+                        }
+                    }
+                });
+
+                return modalInstance.result;
+
             }
         };
     }

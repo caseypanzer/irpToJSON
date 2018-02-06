@@ -13,9 +13,6 @@
 
     var async = require('async');
 
-    /**
-     * The product list Controller
-     */
     module.controller('XlsxImportEditorController', ['$scope', '$state', 'toastr', 'InvestmentTreeHelper', 'AppConstants',  'params', 'ModalService', '$modalInstance', '$sce', function ($scope, $state, toastr, InvestmentTreeHelper, AppConstants, params, ModalService, $modalInstance, $sce) {
 
 
@@ -26,17 +23,7 @@
 
                 $ctrl.contextFile = params.file;
 
-                $ctrl.sheetNameOptions = [
-                    "_property",
-                    "_financial",
-                    'tccomparativefinancialstatusirp',
-                    'rptddelinquentloanstatus'  ,
-                    'rptmhistoricalloanmod',
-                    'rptrsvloc',
-                    'rptreostatus',
-                    'rptwservicerwatchlistirp',
-                    'rptadvrecovery'
-                ];
+                $ctrl.sheetNameOptions = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
 
                 setTimeout(function () {
                     $ctrl.startProcessFile();

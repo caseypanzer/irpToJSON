@@ -1,0 +1,28 @@
+<div class="info-modal">
+    <div class="modal-header">
+        <h4 class="modal-title" ng-if="title">Edit {{ $ctrl.contextFile.name }}</h4>
+    </div>
+    <div class="modal-body">
+        <h4  ng-if="$ctrl.contextFile.name">{{ $ctrl.contextFile.name }} does not contain expected sheet names.. </h4>
+        <div class="instructions">
+          Choose the correct and corresponding sheet name from the dropdown menu below and then click Submit. <br>
+          We take care of the rest!
+        </div>
+        <div ng-if="$ctrl.isProcessing">Processing File <tiny-spinner></tiny-spinner>  </div>
+        <div ng-repeat="sheetName in ::$ctrl.workbook.SheetNames track by $index">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label> Current Sheet Name: {{ ::sheetName }}</label>
+                    <span class="ion ion-code"></span>
+                    <select class="form-control" placeholder="Please select sheet name"  ng-change="$ctrl.handleSheetNameChanged(sheetName,$ctrl.sheetNameAlias[sheetName])"   ng-model="$ctrl.sheetNameAlias[sheetName]" required>
+                        <option value="">Please select sheet name</option>
+                        <option ng-value="sheet" ng-repeat="sheet in $ctrl.sheetNameOptions" ng-selected="sheet === $ctrl.sheetNameAlias[sheetName]">{{ sheet }}</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-success btn-xs" type="button" ng-click="$ctrl.submit()">Submit</button>
+    </div>
+</div>
