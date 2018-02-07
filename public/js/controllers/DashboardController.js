@@ -9,7 +9,7 @@
     var module = angular.module('IrpToJsonViewer');
     var XLSX  = require('xlsx');
     var async = require('async');
-
+    var FileSaver = require('file-saver');
     /**
      * The product list Controller
      */
@@ -260,15 +260,8 @@
             var file = new Blob([ JSON.stringify(data, null, 4) ], {
                 type : 'application/json'
             });
-            var fileURL = URL.createObjectURL(file);
-            var link         = document.createElement('a');
 
-            link.href        = fileURL;
-            link.target      = '_blank';
-            link.download    = [$ctrl.loanFile.name.replace(/\.\w+/,''),'.json'].join('');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            FileSaver.saveAs(file);
         }
 
     }]);

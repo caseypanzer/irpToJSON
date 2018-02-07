@@ -5,6 +5,7 @@
 (function () {
 
     'use strict';
+    require('./vendors.js');
 
     var module = angular.module("IrpToJsonViewer", ['ui.router', 'ui.bootstrap', 'ui.bootstrap.tpls', 'ui.bootstrap.modal', 'ngResource', 'toastr', 'ngSanitize', 'ngFileUpload']);
 
