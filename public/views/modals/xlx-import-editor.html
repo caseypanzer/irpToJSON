@@ -5,8 +5,8 @@
     <div class="modal-body">
         <h4  ng-if="$ctrl.contextFile.name">{{ $ctrl.contextFile.name }} is not in the correct file format (.xlsx). </h4>
         <div class="instructions" ng-if="!$ctrl.isLoanFile">
-          Choose the correct and corresponding sheet name from the dropdown menu below and then click Submit. <br>
-          We take care of the rest!
+            Choose the correct and corresponding sheet name from the dropdown menu below and then click Submit. <br>
+            We take care of the rest!
         </div>
         <div class="instructions" ng-if="$ctrl.isLoanFile">
             We are converting the file into xlsx format.
@@ -22,6 +22,20 @@
                     </select>
                 </div>
             </form>
+          <!-- <div class="table-responsive" style="height: 500px;">
+
+               <span ng-bind-html="table._html"></span>
+
+              <table class="table table-condensed">
+                    <tbody>
+                        <tr ng-repeat="row in table.rows">
+                             <td ng-repeat="col in row track by $index">
+                                    <span> {{ ::col}} &nbsp;</span>
+                             </td>
+                        </tr>
+                    </tbody>
+                </table>
+         </div>-->
         </div>
     </div>
     <div class="modal-footer">
