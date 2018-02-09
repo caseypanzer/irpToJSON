@@ -38,6 +38,9 @@
 
         $ctrl.submit = function () {
 
+            $ctrl.isProcessing = true;
+
+
             var wb = new Workbook();
             $ctrl.workbook.SheetNames.forEach(function (sheetName) {
                 wb.SheetNames.push(sheetName);
@@ -53,6 +56,7 @@
             };
             let modifiedFile= new Blob([s2ab(wbout)], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
             modifiedFile.name = modifiedFileName+'.xlsx';
+            $ctrl.isProcessing = false;
             $modalInstance.close(modifiedFile);
 
         };
@@ -82,7 +86,13 @@
                 $ctrl.workbook = workbook;
                 if ($ctrl.workbook && Array.isArray($ctrl.workbook.SheetNames)) {
                     $ctrl.workbook.SheetNames.forEach(function (sheetName) {
-                        $ctrl.sheetNameAlias[sheetName] = sheetName;
+                        if(new RegExp('_property', 'i').test(sheetName)){
+                            $ctrl.sheetNameAlias[sheetName] = '_property';
+                        } else if(new RegExp('_financial', 'i').test(sheetName)){
+                            $ctrl.sheetNameAlias[sheetName] = '_financial';
+                        } else {
+                            $ctrl.sheetNameAlias[sheetName] = sheetName.toLowerCase();
+                        }
                     });
                 }
                 $ctrl.isProcessing = false;

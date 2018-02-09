@@ -117,10 +117,8 @@
                         try {
                             workbook = XLSX.read(data, {type: 'binary'});
                             if (workbook && Array.isArray(workbook.SheetNames)) {
-                                if(!file.isSheetNameCheckingProcessed && !workbook.SheetNames.some(function (sheetName) {
-                                       return (expectedServiceTabs.indexOf(sheetName.toString().toLowerCase()) > -1);
-                                    })){
-                                    ModalService.showSheetNameEditorWizard({file:file}).then(function (modifiedFile) {
+
+                                ModalService.showSheetNameEditorWizard({file:file}).then(function (modifiedFile) {
                                         let fIndex = $ctrl.serviceFile.findIndex((_file => _file === file));
                                         modifiedFile.isSheetNameCheckingProcessed = true;
                                         $ctrl.serviceFile.splice(fIndex, 1, modifiedFile);
@@ -147,14 +145,8 @@
                                         reader.readAsBinaryString(modifiedFile);
 
                                     });
-                                } else {
-                                    workbook.SheetNames.forEach(function (sheetName) {
-                                        sheetNameMap[sheetName.toLowerCase()] = true;
-                                    });
-                                    next(null);
-                                }
-                            }
 
+                            }
 
                         } catch (ex) {
                             console.log(ex);

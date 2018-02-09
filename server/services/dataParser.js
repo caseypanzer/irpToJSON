@@ -36,7 +36,6 @@ module.exports.processInputFiles = function (params) {
         if (!serviceFile){
             return reject(new Error("serviceFile parameter is missing"))
         }
-        debugger;
 
         module.exports.parseLoanFile(loanFile).then((loans)=> {
             loanCollections = loans;
