@@ -49,6 +49,7 @@
             if(newVal !==  oldVal){
               if(newVal){
                   $ctrl.loanFile = newVal;
+                  setTimeout(checkAndAdjustLoanFiles, 10);
               }
             }
         });
@@ -64,6 +65,22 @@
 
             }
         });
+
+
+        function checkAndAdjustLoanFiles() {
+
+            if($ctrl.loanFile){
+                if(/\.txt$/i.test($ctrl.loanFile.name) ||  /\.csv/i.test($ctrl.loanFile.name)){
+                    ModalService.showXlsxImportEditorWizard({file:$ctrl.loanFile, isLoanFile: true}).then(function (modifiedFile) {
+                        $ctrl.loanFile = modifiedFile;
+                        $scope.$applyAsync();
+                    }, function (ex) {
+                        console.log(ex);
+                        next(null);
+                    });
+                }
+            }
+        }
 
 
         function adjustAvailableTabs() {

@@ -22,7 +22,7 @@
                 $ctrl.isProcessing = true;
 
                 $ctrl.contextFile = params.file;
-
+                $ctrl.isLoanFile = params.isLoanFile;
                 $ctrl.sheetNameOptions = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
 
                 setTimeout(function () {
@@ -79,25 +79,6 @@
 
                        modifiedFile.name = modifiedFileName+'.xlsx';
                         $modalInstance.close(modifiedFile);
-
-                       /*
-                       let modifiedFile = new File(fileBlob, modifiedFileName+'.xlsx', {
-                           type : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                       });
-                       */
-
-//modifiedFileName+'.xlsx'
-
-
-                       /*
-                            var o = XLSX.write(wb, { bookType:'html', type: 'binary', editable:true});
-                            sheetName : sheetName,
-                            rows      :  XLSX.utils.sheet_to_row_object_array(wb["Sheets"][sheetName])
-                        });
-
-
-
-                        */
                     }
 
                 };
@@ -113,14 +94,9 @@
                                 xw(data, process_wb);
                             } catch(e) {
                                 console.log(e);
-                               /* alertify.alert('We unfortunately dropped the ball here.  Please test the file using the <a href="/js-xlsx/">raw parser</a>.  If there are issues with the file processor, please send this file to <a href="mailto:dev@sheetjs.com?subject=I+broke+your+stuff">dev@sheetjs.com</a> so we can make things right.', function(){});*/
-
                             }
                         }
-                        /*if(e.target.result.length > 1e6) alertify.confirm("This file is " + e.target.result.length + " bytes and may take a few moments.  Your browser may lock up during this process.  Shall we play?", function(k) { if(k) doitnow(); });*/
-
-
-                         doitnow();
+                        doitnow();
                     };
                     reader.readAsBinaryString($ctrl.contextFile);
                 };
@@ -147,13 +123,10 @@
         }
         function process_wb(wb) {
 
-
             if(wb){
-               // console.log('wb', XLSX.utils.sheet_to_row_object_array(wb));
                 $ctrl.workbook = wb;
                 $ctrl.htmlTables = [];
                 wb.SheetNames.forEach(function(sheetName) {
-                    //console.log('data', XLSX.utils.aoa_to_sheet(wb["Sheets"][sheetName]));
                     let  _htmlStr = XLSX.write(wb, { sheetName : sheetName, bookType:'html', type: 'binary', editable:true});
                     _htmlStr = _htmlStr.replace('<html><body>', '');
                     _htmlStr = _htmlStr.replace('<table>', '<table class="table table-condensed">');
@@ -163,18 +136,14 @@
                         _html     :  $sce.trustAsHtml(_htmlStr),
                     });
                 });
-
-
-                //rows      :  XLSX.utils.sheet_to_row_object_array(wb["Sheets"][sheetName])
-               // var o = XLSX.write(wb, { bookType:'html', type: 'binary', editable:true});
-               // document.getElementById('excel-table').outerHTML = o;
-
                 $ctrl.isProcessing = false;
-                $scope.$applyAsync();
-            }
+                if($ctrl.isLoanFile === true){
+                        $ctrl.submit();
+                } else {
+                    $scope.$applyAsync();
+                }
 
-           // XLSX.utils.sheet_to_row_object_array
-            //spinner.stop();
+            }
 
         }
 
