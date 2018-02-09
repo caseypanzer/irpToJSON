@@ -71,7 +71,8 @@
 
             if($ctrl.loanFile){
                 if(/\.txt$/i.test($ctrl.loanFile.name) ||  /\.csv/i.test($ctrl.loanFile.name)){
-                    ModalService.showXlsxImportEditorWizard({file:$ctrl.loanFile, isLoanFile: true}).then(function (modifiedFile) {
+
+                    ModalService.showXlsxImportEditorWizard({file: $ctrl.loanFile, isLoanFile: true}).then(function (modifiedFile) {
                         $ctrl.loanFile = modifiedFile;
                         $scope.$applyAsync();
                     }, function (ex) {
