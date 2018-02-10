@@ -9,9 +9,6 @@
 
     var XLSX = require('xlsx');
 
-    var cheerio = require('cheerio');
-
-    var async = require('async');
 
     module.controller('XlsxImportEditorController', [
         '$scope',
