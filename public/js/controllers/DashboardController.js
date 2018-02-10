@@ -1,5 +1,5 @@
 /**
- * Created by sajibsarkar on 3/31/16.
+ * Created by sajib sarkar on 3/31/16.
  */
 
 
@@ -20,6 +20,7 @@
         window.myCtrl = $ctrl;
 
         $ctrl.loanFile;
+
         $ctrl.serviceFile=[];
 
 
@@ -33,13 +34,11 @@
                 });
                 return  memo;
             },[]);
-
             return  $ctrl.availableServiceTabs;
         }
 
 
         $ctrl.investments = undefined;
-
 
 
         getAvaileAbleServiceTab();
@@ -97,7 +96,6 @@
         function readFileSheetName(files) {
             let sheetNameMap = {};
             async.eachSeries(files,  function (file, next) {
-
                 if(/\.txt$/i.test(file.name) ||  /\.csv/i.test(file.name)){
                     ModalService.showXlsxImportEditorWizard({file:file}).then(function (modifiedFile) {
                         let fIndex = $ctrl.serviceFile.findIndex((_file => _file === file));
@@ -114,7 +112,6 @@
                                     });
                                 }
                                 next(null);
-
                             } catch (ex) {
                                 var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
                                 console.log(message);
@@ -127,7 +124,7 @@
                         console.log(ex);
                         next(null);
                     });
-                } else {
+                } else if(!file.isSheetNameCheckingProcessed){
                     let reader = new FileReader();
                     reader.onload = function (e) {
                         var data = e.target.result;
@@ -175,6 +172,8 @@
 
                     };
                     reader.readAsBinaryString(file);
+                }  else {
+                    next(null);
                 }
 
 
@@ -265,7 +264,6 @@
         $ctrl.downloadJson=function () {
 
             let data = $ctrl.investments;
-
             //InvestmentJsonFormatHelper.formatDownloadableJson($ctrl.investments);
             var file = new Blob([ JSON.stringify(data, null, 4) ], {
                 type : 'application/json'

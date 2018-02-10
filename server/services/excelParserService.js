@@ -37,7 +37,6 @@ module.exports.parseBinaryFile = function (contentPath, params) {
                         let worksheet = workbook.Sheets[sheetName];
                         if (worksheet) {
                             let nickName =  sheetMapper[sheetName.toLowerCase()] ? _.camelCase(sheetMapper[sheetName.toLowerCase()].name) : (sheetMapper.all && sheetMapper.all.name? _.camelCase(sheetMapper.all.name) : 'data');
-
                             tableData[nickName] = [];
                             let refDataTable = tableData[nickName];
                             let dataByRowIndex = _getDataByRow(worksheet);
@@ -55,6 +54,8 @@ module.exports.parseBinaryFile = function (contentPath, params) {
                                 }
                             });
                         }
+                    } else{
+                        console.log('sheetName was not allowed',sheetName );
                     }
                 });
             }

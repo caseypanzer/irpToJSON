@@ -9,7 +9,8 @@
           We take care of the rest!
         </div>
         <div ng-if="$ctrl.isProcessing">Processing File <tiny-spinner></tiny-spinner>  </div>
-        <div ng-repeat="sheetName in ::$ctrl.workbook.SheetNames track by $index">
+        <div class="row max-height-five-hundred scrollable">
+            <div  ng-repeat="sheetName in ::$ctrl.workbook.SheetNames track by $index">
             <form class="form-inline">
                 <div class="form-group">
                     <label> Current Sheet Name: {{ ::sheetName }}</label>
@@ -20,6 +21,7 @@
                     </select>
                 </div>
             </form>
+        </div>
         </div>
     </div>
     <div class="modal-footer">

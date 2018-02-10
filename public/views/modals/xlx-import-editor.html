@@ -12,17 +12,17 @@
             We are converting the file into xlsx format.
         </div>
         <div ng-if="$ctrl.isProcessing">Processing File <tiny-spinner></tiny-spinner>  </div>
-        <div ng-repeat="table in $ctrl.htmlTables">
+        <div ng-repeat="sheetName in ::$ctrl.workbook.SheetNames track by $index">
             <form class="form-inline">
                 <div class="form-group">
                     <label for="sheetName">Sheet Name</label>
-                    <select class="form-control"  id="sheetName" ng-model="table.sheetName" required>
+                    <select class="form-control" ng-change="$ctrl.handleSheetNameChanged(sheetName, $ctrl.sheetNameAlias[sheetName])"  id="sheetName" ng-model="$ctrl.sheetNameAlias[sheetName]" required>
                         <option value="">Please select sheet name</option>
-                        <option ng-value="sheet" ng-repeat="sheet in $ctrl.sheetNameOptions">{{ sheet }}</option>
+                        <option ng-value="sheet" ng-repeat="sheet in $ctrl.sheetNameOptions" ng-selected="sheet === $ctrl.sheetNameAlias[sheetName]">{{ sheet }}</option>
                     </select>
                 </div>
             </form>
-          <!-- <div class="table-responsive" style="height: 500px;">
+           <div class="table-responsive" style="height: 500px;">
 
                <span ng-bind-html="table._html"></span>
 
@@ -35,7 +35,7 @@
                         </tr>
                     </tbody>
                 </table>
-         </div>-->
+         </div>
         </div>
     </div>
     <div class="modal-footer">

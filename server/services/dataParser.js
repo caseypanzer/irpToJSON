@@ -291,8 +291,7 @@ module.exports.parseLoanFile = function (file) {
         let sheetMapper = {
             "all"  :  { name : "loan" }
         };
-
-        excelParserService.parseBinaryFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable.loan)).catch(err => reject(err));
+        excelParserService.parseBinaryFile(contentPath, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable.loan)).catch(err => reject(err));
     });
 };
 

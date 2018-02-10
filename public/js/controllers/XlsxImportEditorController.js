@@ -9,6 +9,8 @@
 
     var XLSX = require('xlsx');
 
+    var cheerio = require('cheerio');
+
     var async = require('async');
 
     module.controller('XlsxImportEditorController', [
@@ -38,9 +40,8 @@
 
             $ctrl.contextFile = params.file;
             $ctrl.isLoanFile = params.isLoanFile;
-            $ctrl.sheetNameOptions = _.cloneDeep(
-                AppConstants.SHEET_NAME_OPTIONS
-            );
+            $ctrl.sheetNameAlias = {};
+            $ctrl.sheetNameOptions = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
 
             setTimeout(function() {
                 $ctrl.startProcessFile();
@@ -54,9 +55,7 @@
 
             $ctrl.submit = function() {
                 if (Array.isArray($ctrl.htmlTables)) {
-                    let inValidSheetName = $ctrl.htmlTables.find(function(
-                        sheetName
-                    ) {
+                    let inValidSheetName = $ctrl.htmlTables.find(function(sheetName) {
                         return (
                             typeof sheetName === 'undefined' ||
                             sheetName === 'Sheet1' ||
@@ -66,43 +65,26 @@
                     });
 
                     if (inValidSheetName) {
-                        return toastr.error(
-                            'Not a valid sheet name. Please choose appropriate sheet name.'
-                        );
+                        return toastr.error('Not a valid sheet name. Please choose appropriate sheet name.');
                     }
 
                     var wb = new Workbook();
-
-                    $ctrl.htmlTables.forEach(function(table) {
-                        let htmlFrag = table._html.valueOf();
-                        let ws = XLSX.utils.table_to_sheet($(htmlFrag)[0]);
-                        // let ws = XLSX.utils.aoa_to_sheet([table.rows]);
-                        wb.SheetNames.push(table.sheetName);
-                        wb.Sheets[table.sheetName] = ws;
+                    $ctrl.workbook.SheetNames.forEach(function(sheetName) {
+                        wb.SheetNames.push(sheetName);
+                        wb.Sheets[sheetName] = $ctrl.workbook.Sheets[sheetName];
                     });
 
-                    let modifiedFileName = $ctrl.contextFile.name.substring(
-                        0,
-                        $ctrl.contextFile.name.lastIndexOf('.')
-                    );
-
-                    var wbout = XLSX.write(wb, {
-                        type: 'binary',
-                        bookSST: false,
-                        bookType: 'xlsx'
-                    });
-
+                    var wbout = XLSX.write(wb, { type: 'binary', bookSST: false, bookType: 'xlsx' });
                     let s2ab = function(s) {
                         var buf = new ArrayBuffer(s.length);
                         var view = new Uint8Array(buf);
-                        for (var i = 0; i != s.length; ++i)
-                            view[i] = s.charCodeAt(i) & 0xff;
+                        for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
                         return buf;
                     };
+                    let modifiedFileName = $ctrl.contextFile.name.substring(0, $ctrl.contextFile.name.lastIndexOf('.'));
 
                     let modifiedFile = new Blob([s2ab(wbout)], {
-                        type:
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                     });
 
                     modifiedFile.name = modifiedFileName + '.xlsx';
@@ -110,6 +92,22 @@
                 }
             };
 
+            $ctrl.handleSheetNameChanged = function(oldsheetName, newSheetName) {
+                if (newSheetName) {
+                    if ($ctrl.workbook) {
+                        if ($ctrl.workbook.SheetNames.findIndex(item => item === newSheetName) > -1) {
+                            toastr(`${newSheetName} already exists. Please choose another name`);
+                        } else {
+                            let sheetIndex = $ctrl.workbook.SheetNames.findIndex(item => item === oldsheetName);
+                            if (sheetIndex > -1) {
+                                $ctrl.workbook.SheetNames[sheetIndex] = newSheetName;
+                                $ctrl.workbook.Sheets[newSheetName] = $ctrl.workbook.Sheets[oldsheetName];
+                                delete $ctrl.workbook.Sheets[oldsheetName];
+                            }
+                        }
+                    }
+                }
+            };
             $ctrl.startProcessFile = function() {
                 var reader = new FileReader();
                 reader.onload = function(e) {
@@ -143,42 +141,29 @@
                     l = 0,
                     w = 10240;
                 for (; l < data.byteLength / w; ++l)
-                    o += String.fromCharCode.apply(
-                        null,
-                        new Uint8Array(data.slice(l * w, l * w + w))
-                    );
-                o += String.fromCharCode.apply(
-                    null,
-                    new Uint8Array(data.slice(l * w))
-                );
+                    o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)));
+                o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)));
                 return o;
             }
             function process_wb(wb) {
                 if (wb) {
                     $ctrl.workbook = wb;
                     $ctrl.htmlTables = [];
-                    wb.SheetNames.forEach(function(sheetName) {
-                        let _htmlStr = XLSX.write(wb, {
-                            sheetName: sheetName,
-                            bookType: 'html',
-                            type: 'binary',
-                            editable: true
+
+                    if ($ctrl.workbook && Array.isArray($ctrl.workbook.SheetNames)) {
+                        $ctrl.workbook.SheetNames.forEach(function(sheetName) {
+                            if (new RegExp('_property', 'i').test(sheetName)) {
+                                $ctrl.sheetNameAlias[sheetName] = '_property';
+                            } else if (new RegExp('_financial', 'i').test(sheetName)) {
+                                $ctrl.sheetNameAlias[sheetName] = '_financial';
+                            } else {
+                                $ctrl.sheetNameAlias[sheetName] = sheetName.toLowerCase();
+                            }
                         });
-                        _htmlStr = _htmlStr.replace('<html><body>', '');
-                        _htmlStr = _htmlStr.replace(
-                            '<table>',
-                            '<table class="table table-condensed">'
-                        );
-                        _htmlStr = _htmlStr.replace('</html></body>', '');
-                        $ctrl.htmlTables.push({
-                            sheetName: sheetName,
-                            _html: $sce.trustAsHtml(_htmlStr)
-                        });
-                    });
+                    }
                     $ctrl.isProcessing = false;
                     if ($ctrl.isLoanFile === true) {
-                        $scope.$applyAsync();
-                        $ctrl.submit();
+                         $ctrl.submit();
                     } else {
                         $scope.$applyAsync();
                     }
