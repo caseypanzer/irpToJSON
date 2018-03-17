@@ -8,8 +8,8 @@ var aws = require('aws-sdk');
 var  path = require('path');
 var crypto = require("crypto");
 
-aws.config.set("accessKeyId", 'AKIAI3FYU4RUIHSB4IFA');
-aws.config.set("secretAccessKey", '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');
+aws.config.set("accessKeyId", '---');
+aws.config.set("secretAccessKey", '--');
 
 var s3 = new aws.S3({apiVersion: '2006-03-01'});
 
@@ -49,7 +49,7 @@ module.exports.initiateUpload = function (data, next) {
                 var base64Policy   = module.exports.buildPolicy(data);
                 var signature      = module.exports.buildSignature(base64Policy);
                 var actionUri      = module.exports.buildActionUri();
-                var AWSAccessKeyId = 'AKIAI3FYU4RUIHSB4IFA';
+                var AWSAccessKeyId = '--';
                 resolve({key: remoteFilePath, policy: base64Policy, AWSAccessKeyId: AWSAccessKeyId, signature: signature, acl: 'public-read', actionUri: actionUri });
             } catch (ex) {
                 console.log(ex);

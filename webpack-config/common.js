@@ -7,9 +7,7 @@ const webpack = require('webpack');
 const fs = require('fs');
 const klawSync = require('klaw-sync');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 let appSrc;
 
 try {
@@ -29,46 +27,42 @@ module.exports = {
         app: appSrc
     },
     target: 'web',
-    module: {
-        loaders: [
-            {
-                test: /\.(css)$/,
-                use: [
-                    {
-                        loader: 'style-loader'
-                    },
-                    {
-                        loader: 'css-loader'
-                    }
-                ]
-            },
-            {
-                test: /\.svg$/,
-                loader: 'svg-inline-loader'
-            },
-            {
-                test: /\.(eot|svg|ttf|woff|woff2)$/,
-                loader: 'file-loader?name=/fonts/[name].[ext]'
-            },
-            {
+    module:{
+        rules:[{
+            test : /\.css$/ ,
+            use : [
+               'style-loader',
+               'css-loader']
+        },{
+            test : /\.scss/ ,
+            use : [
+                'sass-loader',
+                'style-loader',
+                'css-loader']
+        }, {
+            test: /\.(png|svg|jpg|gif|eot|woff|woff2|ttf|otf)$/,
+             use: [
+              'file-loader'
+             ]
+        }, {
                 test: /\.js?$/,
                 include: path.join(__dirname, '../public/js'),
                 exclude: /(node_modules|bower_components)/,
                 loader: 'babel-loader'
             }
-        ],
-        noParse: [/jszip.js$/]
+            ]
     },
     plugins: [
         new CleanWebpackPlugin(['../public/dist']),
-        new ExtractTextPlugin('[name].css'),
         new webpack.ProvidePlugin({
             _: 'lodash',
             async: require('async'),
             moment: require('moment'),
             XLSX: require('xlsx')
         }),
-        new webpack.optimize.ModuleConcatenationPlugin()
+        new webpack.optimize.ModuleConcatenationPlugin(),
+
+       // new ExtractTextPlugin('[name].css'),
     ],
     output: {
         filename: '[name].js',
