@@ -89,10 +89,9 @@ module.exports.processInputFiles = function (params) {
                         if(Array.isArray(actualLperData)){
                             actualLperData.forEach(function (__data) {
                                 lperData.push(__data);
-                            })
+                            });
                         }
                     });
-                   // console.log('lperData', lperData);
                     return lperData;
                 });
             } else {
