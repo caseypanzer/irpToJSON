@@ -46,7 +46,7 @@ var IprFields = [
     { name: 'totalTIAdvanceOutstanding', type: 'numeric', example: '1000' },
     { name: 'otherExpenseAdvanceOutstanding', type: 'numeric', example: '1000' },
     { name: 'paymentStatusOfLoanFkaStatusOfLoan', type: 'an', example: '1' },
-    { name: 'inBankruptcyYN', type: 'an', example: 'Y' },
+    { name: 'inBankruptcyYN', type: 'boolean', example: 'Y' },
     { name: 'foreclosureStartDate', type: 'date', format: 'YYYYMMDD' },
     { name: 'reoDate', type: 'date', format: 'YYYYMMDD' },
     { name: 'bankruptcyDate', type: 'date', format: 'YYYYMMDD' },
@@ -115,7 +115,7 @@ var IprFields = [
     { name: 'reimbursedInterestOnAdvances', type: 'numeric', example: '1000' },
     { name: 'workoutFeeAmount', type: 'numeric', example: '1000' },
     { name: 'liquidationFeeAmount', type: 'numeric', example: '1000' },
-    { name: 'nonRecoverabilityDetermined', type: 'an', example: 'Y' },
+    { name: 'nonRecoverabilityDetermined', type: 'boolean', example: 'Y' },
     { name: 'closingDateOfOriginalDocumentPermittedExtension', type: 'date', format: 'YYYYMMDD' },
     { name: 'totalLoanAmountAtOrigination', type: 'numeric', example: '1000' },
     { name: 'currentLockboxStatusFkaEmptyField', type: 'an', example: '1' },
@@ -142,8 +142,8 @@ var IprFields = [
     { name: 'specialServicer', type: 'an', example: 'Text' },
     { name: 'reportingPeriodBeginDate', type: 'date', format: 'YYYYMMDD' },
     { name: 'reportingPeriodEndDate', type: 'date', format: 'YYYYMMDD' },
-    { name: 'modificationIndicator', type: 'an', example: 'Y' },
-    { name: 'assetSubjectToDemand', type: 'an', example: 'Y' },
+    { name: 'modificationIndicator', type: 'boolean', example: 'Y' },
+    { name: 'assetSubjectToDemand', type: 'boolean', example: 'Y' },
     { name: 'statusOfAssetSubjectToDemand', type: 'numeric', example: '1' },
     { name: 'demandResolutionDate', type: 'date', format: 'YYYYMMDD' },
     { name: 'repurchaseOrReplacementReason', type: 'numeric', example: '1' },
@@ -175,14 +175,31 @@ module.exports.mapLperData = function(data) {
                     if (fieldItem && fieldItem.name) {
                         let __val = dataRowItems[i];
                         if (fieldItem.type === 'date') {
-                            if (fieldItem.format) {
+                            if (fieldItem.format && __val) {
                                 __val = moment(__val, fieldItem.format).toDate();
-                            } else {
+                                __val.setHours(0);
+                                __val.setMinutes(0);
+                                __val.setSeconds(0);
+                            } else  if(__val) {
                                 __val = new Date(__val);
+                                __val.setHours(0);
+                                __val.setMinutes(0);
+                                __val.setSeconds(0);
                             }
                         } else if (fieldItem.type === 'numeric') {
                             __val = parseFloat(__val.toString());
+                            if(isNaN(__val)){
+                                __val = null;
+                            }
+                        } else if (fieldItem.type === 'boolean') {
+                            if((__val === true || __val === 'true' || __val === 'True'|| __val === 'TRUE' || __val === 1 || __val === '1' || __val === 'Y' || __val === 'Y') ){
+                                __val = true;
+                            } else if((__val === false || __val === 'false' || __val === 'False' || __val === 'FALSE'  || __val === 0 || __val === '0' || __val === 'N' || __val === 'n') ){
+                                __val = false;
+                            }
+
                         }
+
                         resultItem[fieldItem.name] = __val;
                     }
                 }
@@ -191,11 +208,13 @@ module.exports.mapLperData = function(data) {
 
             // console.log('resultItem', resultItem);
             if (Object.keys(resultItem).length > 0) {
+
                 results.push(resultItem);
             }
         });
 
         //console.log('emptyColumnPos', emptyColumnPos);
     }
+    console.log('resultItem', _.head(results));
     return results;
 };

@@ -276,7 +276,13 @@ module.exports.processInputFiles = function (params) {
                         if(__lperDataMap && __lperDataMap[loanForeignKey]){
                             //console.log('yep!!! __lperDataMap[loanForeignKey] exists!');
                             Object.keys(__lperDataMap[loanForeignKey]).filter(lperDataKey => lperDataKey !== 'loanId' &&  lperDataKey !== 'prospectusLoanId' &&   lperDataKey !== 'transactionId').forEach(function (lperDataKey) {
-                                loanItem[lperDataKey] = __lperDataMap[loanForeignKey][lperDataKey];
+
+                                if(typeof __lperDataMap[loanForeignKey][lperDataKey] !== 'undefined'){
+                                    loanItem[lperDataKey] = __lperDataMap[loanForeignKey][lperDataKey];
+                                }  else if(typeof loanItem[lperDataKey] === 'undefined'){
+                                    loanItem[lperDataKey] = undefined;
+                                }
+
                                   //  console.log('lperDataKey', lperDataKey);
                             });
                             // __lperDataMap[loanForeignKey]
