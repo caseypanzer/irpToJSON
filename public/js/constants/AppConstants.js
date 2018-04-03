@@ -20,8 +20,7 @@
             'rptrsvloc',
             'rptreostatus',
             'rptwservicerwatchlistirp',
-            'rptadvrecovery',
-            'lper'
+            'rptadvrecovery'
         ]
     });
 })();
