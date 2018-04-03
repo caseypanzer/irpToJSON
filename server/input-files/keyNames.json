@@ -301,5 +301,23 @@
     "Loan ID",
     "Property ID",
     "Prospectus ID"
-  ]
+  ],
+    "rptttotalloan":[
+        "Transaction ID",
+        "Group ID",
+        "LOAN ID",
+        "Split Loan ID",
+        "Original Split Loan Amount",
+        "Prospectus Loan ID",
+        "Loan Contributor to Securitization",
+        "Prospectus Loan Name",
+        "Original Shadow Rating M/S/F/D",
+        "Total Loan Amount at Origination",
+        "Scheduled Principal Balance at Contribution",
+        "Current Ending Scheduled Balance",
+        "Total Scheduled P&I Due",
+        "Current Note Rate",
+        "Paid Thru Date",
+        "Trustee"
+    ]
 }

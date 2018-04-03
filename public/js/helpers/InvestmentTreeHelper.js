@@ -14,7 +14,7 @@
         'rptrsvloc',
         // 'rptreostatus',
         'rptwservicerwatchlistirp',
-        //'tlr',
+        'rptttotalloan',
         'rptadvrecovery'
     ];
 
@@ -326,6 +326,9 @@
                             break;
                         case 'tccomparativefinancialstatusirp':
                             otherPropertyGroupedKey = 'prospectusId';
+                            break;
+                        case 'rptttotalloan':
+                            otherPropertyGroupedKey = 'paidThruDate';
                             break;
                     }
 

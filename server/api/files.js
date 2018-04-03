@@ -22,7 +22,12 @@ module.exports.upload = function (req, res, params, next) {
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile, lperFile: lperFile}).then(function (investmentJson) {
            // next(new Error('Test  Error'));
-            //console.log('investmentJson', investmentJson);
+            investmentJson.Investments.forEach(function (item) {
+                if(item.loanId.toString() === '305950001'){
+                   // console.log('investmentJson', item);
+                }
+            })
+
             res.json(investmentJson);
             setImmediate(() => {
                 loanFile.path  && fs.unlinkSync(loanFile.path);

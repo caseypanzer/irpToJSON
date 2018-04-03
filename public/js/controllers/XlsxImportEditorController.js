@@ -123,7 +123,7 @@
 
             function xw(data, cb) {
                 try {
-                    let workbook = XLSX.read(data, { type: 'binary' });
+                    let workbook = XLSX.read(data, { type: 'binary',cellDates: true });
                     cb(workbook);
                 } catch (ex) {
                     var message =

@@ -146,7 +146,7 @@
                             var data = e.target.result;
                             var workbook;
                             try {
-                                workbook = XLSX.read(data, {type: 'binary'});
+                                workbook = XLSX.read(data, {type: 'binary' , cellDates: true});
                                 if (workbook && Array.isArray(workbook.SheetNames)) {
                                     workbook.SheetNames.forEach(function (sheetName) {
                                         sheetNameMap[sheetName.toLowerCase()] = true;
@@ -171,7 +171,7 @@
                         var data = e.target.result;
                         var workbook;
                         try {
-                            workbook = XLSX.read(data, {type: 'binary'});
+                            workbook = XLSX.read(data, {type: 'binary', cellDates: true});
                             if (workbook && Array.isArray(workbook.SheetNames)) {
 
                                 ModalService.showSheetNameEditorWizard({file:file}).then(function (modifiedFile) {
@@ -183,7 +183,7 @@
                                             var data = e.target.result;
                                             var workbook;
                                             try {
-                                                workbook = XLSX.read(data, {type: 'binary'});
+                                                workbook = XLSX.read(data, {type: 'binary', cellDates: true});
                                                 if (workbook && Array.isArray(workbook.SheetNames)) {
                                                     workbook.SheetNames.forEach(function (sheetName) {
                                                         sheetNameMap[sheetName.toLowerCase()] = true;

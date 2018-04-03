@@ -18,7 +18,7 @@ const financialSheetMapper               = {
     'rptrsvloc'                          : { name: 'rptrsvloc', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptreostatus'                       : { name: 'rptreostatus' , isHeaderRowExists: true, primaryKey: 'propertyId' },
     'rptwservicerwatchlistirp'           : { name: 'rptwservicerwatchlistirp', isHeaderRowExists: true , primaryKey: 'loanId'  },
-    'tlr'                                : { name: 'tlr', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rptttotalloan'                      : { name: 'rptttotalloan', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptadvrecovery'                     : { name: 'rptadvrecovery', isHeaderRowExists: true,  primaryKey: 'loanId'  },
     'lpr'                                : { name: 'lpr', isHeaderRowExists: false,  primaryKey: 'loanId'  }
 };

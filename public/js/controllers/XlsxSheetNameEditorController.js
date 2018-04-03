@@ -82,7 +82,7 @@
             var reader = new FileReader();
             reader.onload = function(e) {
                 let data = e.target.result;
-                let workbook = XLSX.read(data, {type: 'binary'});
+                let workbook = XLSX.read(data, {type: 'binary', cellDates: true});
                 $ctrl.workbook = workbook;
                 if ($ctrl.workbook && Array.isArray($ctrl.workbook.SheetNames)) {
                     $ctrl.workbook.SheetNames.forEach(function (sheetName) {

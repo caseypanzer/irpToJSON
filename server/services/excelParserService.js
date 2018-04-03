@@ -104,9 +104,10 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                             let dataByRowIndex = _getDataByRow(worksheet);
 
                             if(sheetMapper[checkResultPropertyName] && sheetMapper[checkResultPropertyName].isHeaderRowExists){
-                               // console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
+                                console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
                                 let jsonKeyMap = jsonDataKeys[checkResultPropertyName];
                                 let headersIndex = [];
+
                                 if (jsonKeyMap){
 
                                     //console.log('jsonKeyMap', jsonKeyMap);
@@ -119,7 +120,8 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                         }
                                     });
 
-                                     // console.log(_rowData);
+
+                                     //
                                     for (let i=0; i <_rowData.length; i++){
                                         let  _cols = _rowData[i];
                                        // console.log('_cols', _cols);
@@ -180,6 +182,7 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                     }
                                 });
                             }
+
 
                         }
                     }
