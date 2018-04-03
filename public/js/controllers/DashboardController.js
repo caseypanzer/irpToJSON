@@ -207,9 +207,7 @@
 
             getBase64($ctrl.loanFile).then(res => {
                 loanText  =  res;
-
                 let _promises = [];
-
                 if(Array.isArray($ctrl.serviceFile)){
                     $ctrl.serviceFile.forEach(function (_serviceFile) {
                         _promises.push(getBase64(_serviceFile));
