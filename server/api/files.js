@@ -16,7 +16,7 @@ module.exports.upload = function (req, res, params, next) {
     }
 
     if(params.lperFile){
-        lperFile = decodeURIComponent(params.lperFile);
+        lperFile = params.lperFile.map((_lperFile)=> decodeURIComponent(_lperFile));
     }
 
     if (loanFile && serviceFile){

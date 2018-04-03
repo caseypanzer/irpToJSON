@@ -23,7 +23,7 @@
 
         $ctrl.serviceFile=[];
 
-        $ctrl.lperFile;
+        $ctrl.lperFile = [];
 
 
         let expectedServiceTabs = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
@@ -58,8 +58,12 @@
         $scope.$watch('$ctrl.lperFilePlaceHolder', function (newVal, oldVal) {
             if(newVal !==  oldVal){
                 if(newVal){
-                    $ctrl.lperFile = newVal;
-                    setTimeout(checkAndAdjustLperFiles, 10);
+                    if(newVal && newVal.length >  0){
+                        newVal.forEach(function (_newFile) {
+                            $ctrl.lperFile.push(_newFile);
+                        });
+                        setTimeout(checkAndAdjustLperFiles, 10);
+                    }
                 }
             }
         });
@@ -95,15 +99,25 @@
         function checkAndAdjustLperFiles() {
 
             if($ctrl.lperFile){
-                if(/\.txt$/i.test($ctrl.lperFile.name) ||  /\.csv/i.test($ctrl.lperFile.name)){
-                    ModalService.showXlsxImportEditorWizard({file: $ctrl.lperFile, isLoanFile: true}).then(function (modifiedFile) {
-                        $ctrl.lperFile = modifiedFile;
+
+                async.eachSeries($ctrl.lperFile,  function (file, next) {
+                    if(/\.txt$/i.test(file.name) ||  /\.csv/i.test(file.name)){
                         $scope.$applyAsync();
-                    }, function (ex) {
-                        console.log(ex);
-                        next(null);
-                    });
-                }
+                        ModalService.showXlsxImportEditorWizard({file: file, isLoanFile: true}).then(function (modifiedFile) {
+                            let fIndex = $ctrl.lperFile.findIndex((_file => _file === file));
+                            $ctrl.lperFile.splice(fIndex, 1, modifiedFile);
+                            next(modifiedFile);
+                        }, function (ex) {
+                            console.log(ex);
+                            next(file);
+                        });
+                    }  else {
+                        next(file);
+                    }
+
+                }, function (files) {
+                    $scope.$applyAsync();
+                });
             }
         }
 
@@ -245,9 +259,13 @@
 
             }).then((res)=> {
                 serviceText  =  res;
-                if($ctrl.lperFile){
-                    return   getBase64($ctrl.lperFile);
-                } else return true;
+                let lperFilePromises=[];
+                if(Array.isArray($ctrl.lperFile)){
+                    $ctrl.lperFile.forEach(function (__file) {
+                        lperFilePromises.push(getBase64(__file))
+                    });
+                    return  Promise.all(lperFilePromises) ;
+                } else return false;
 
             }).then((lperFileText) => {
 
@@ -257,7 +275,7 @@
                     "serviceFile": serviceText
                 };
 
-                if(lperFileText && lperFileText  !== true){
+                if(lperFileText && lperFileText.length >  0){
                     requestParams.lperFile = lperFileText;
                 }
 

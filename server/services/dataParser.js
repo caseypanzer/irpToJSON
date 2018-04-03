@@ -79,9 +79,19 @@ module.exports.processInputFiles = function (params) {
                 propertyData   = propertyFinanceData.property;
                 financialData  = propertyFinanceData.financial;
             }
-            if(lperFile){
-                return  module.exports.parseLperFile(lperFile).then(function (__lperData) {
-                    lperData = __lperData;
+
+            lperData = [];
+            let lperFilePromises =[];
+            if(Array.isArray(lperFile)){
+                lperFile.map(__lperFile => lperFilePromises.push(module.exports.parseLperFile(__lperFile)));
+                return  Promise.all(lperFilePromises).then(function (__lperData) {
+                    __lperData.forEach(function (actualLperData) {
+                        if(Array.isArray(actualLperData)){
+                            actualLperData.forEach(function (__data) {
+                                lperData.push(__data);
+                            })
+                        }
+                    });
                    // console.log('lperData', lperData);
                     return lperData;
                 });
@@ -90,6 +100,7 @@ module.exports.processInputFiles = function (params) {
             }
 
         }).then((__lperData)=> {
+
             let propertyGroupData, __propertyDataMap, __lperDataMap;
 
             if (Array.isArray(financialData)){
@@ -332,7 +343,7 @@ module.exports.parseLoanFile = function (file) {
 
 module.exports.parseLperFile = function (file) {
     return   new Promise((resolve,  reject) => {
-        debugger;
+
         let parsedFileContent =  getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
         let sheetMapper = {
