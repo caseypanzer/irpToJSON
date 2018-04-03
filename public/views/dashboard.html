@@ -65,6 +65,30 @@
       <hr>
       <div class="row large-font">
         <div class="col-perc-40 padding-left-15">
+          Upload most recent LPER files for a single securitization.
+        </div>
+        <div class="col-perc-30 ta-center">
+          &nbsp;
+          <div class="text-success">{{ $ctrl.lperFile.name }}</div>
+        </div>
+        <div class="col-perc-30">
+          <div ngf-select ng-model="$ctrl.lperFilePlaceHolder" class="drop-box"
+               ngf-drag-over-class="'dragover'"  ngf-drop ngf-multiple="false"
+               ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: true, debounce: 0}"
+               ngf-pattern="*">
+            <div class="">
+              Drop .xls File Here
+            </div>
+            <button type="button" name="upload" class="btn-upload btn btn-primary">Select a File From Your Computer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <h3>Step 4</h3>
+      <hr>
+      <div class="row large-font">
+        <div class="col-perc-40 padding-left-15">
           Consolidate IRP to Single File Format
         </div>
         <div class="col-perc-30 ta-center">

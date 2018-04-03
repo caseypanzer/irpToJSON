@@ -23,6 +23,8 @@
 
         $ctrl.serviceFile=[];
 
+        $ctrl.lperFile;
+
 
         let expectedServiceTabs = _.cloneDeep(AppConstants.SHEET_NAME_OPTIONS);
 
@@ -53,6 +55,15 @@
             }
         });
 
+        $scope.$watch('$ctrl.lperFilePlaceHolder', function (newVal, oldVal) {
+            if(newVal !==  oldVal){
+                if(newVal){
+                    $ctrl.lperFile = newVal;
+                    setTimeout(checkAndAdjustLperFiles, 10);
+                }
+            }
+        });
+
         $scope.$watch('$ctrl.serviceFilePlaceHolder', function (newVal, oldVal) {
             if(newVal !==  oldVal){
                 if(newVal && newVal.length >  0){
@@ -70,7 +81,6 @@
 
             if($ctrl.loanFile){
                 if(/\.txt$/i.test($ctrl.loanFile.name) ||  /\.csv/i.test($ctrl.loanFile.name)){
-
                     ModalService.showXlsxImportEditorWizard({file: $ctrl.loanFile, isLoanFile: true}).then(function (modifiedFile) {
                         $ctrl.loanFile = modifiedFile;
                         $scope.$applyAsync();
@@ -81,6 +91,23 @@
                 }
             }
         }
+
+        function checkAndAdjustLperFiles() {
+
+            if($ctrl.lperFile){
+                if(/\.txt$/i.test($ctrl.lperFile.name) ||  /\.csv/i.test($ctrl.lperFile.name)){
+                    ModalService.showXlsxImportEditorWizard({file: $ctrl.lperFile, isLoanFile: true}).then(function (modifiedFile) {
+                        $ctrl.lperFile = modifiedFile;
+                        $scope.$applyAsync();
+                    }, function (ex) {
+                        console.log(ex);
+                        next(null);
+                    });
+                }
+            }
+        }
+
+
 
 
         function adjustAvailableTabs() {
@@ -218,13 +245,21 @@
 
             }).then((res)=> {
                 serviceText  =  res;
-                return  true;
-            }).then(() => {
+                if($ctrl.lperFile){
+                    return   getBase64($ctrl.lperFile);
+                } else return true;
+
+            }).then((lperFileText) => {
+
 
                 let  requestParams =  {
                     "loanFile"  :  loanText,
                     "serviceFile": serviceText
                 };
+
+                if(lperFileText && lperFileText  !== true){
+                    requestParams.lperFile = lperFileText;
+                }
 
                 $.ajax(AppConstants.FILE_UPLOAD_URI_LOCAL, {
                     type     : 'POST',

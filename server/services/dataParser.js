@@ -26,10 +26,10 @@ const financialSheetMapper               = {
 module.exports.processInputFiles = function (params) {
 
     return  new Promise((resolve, reject) => {
-        let  loanFile   = params.loanFile;
-        let serviceFile = params.serviceFile;
+        let  { loanFile, serviceFile, lperFile }  = params;
+
         let loanCollections = [];
-        let propertyData,  financialData;
+        let propertyFinanceData, propertyData,  financialData, lperData;
 
         if(!loanFile){
             return reject(new Error("loanFile parameter is missing"))
@@ -39,6 +39,7 @@ module.exports.processInputFiles = function (params) {
         }
 
         module.exports.parseLoanFile(loanFile).then((loans)=> {
+
             loanCollections = loans;
 
             loanCollections = loanCollections.filter((loanItem)=> loanItem && loanItem.loanId && loanItem.loanId.length > 4 && loanItem.loanId !== 'Loan Id');
@@ -48,6 +49,7 @@ module.exports.processInputFiles = function (params) {
             serviceFile.forEach(function (_serviceFile) {
                 _promises.push(module.exports.parsePropertyFinancialData(_serviceFile));
             });
+
 
             return Promise.all(_promises).then(function (_financeDataCollection) {
 
@@ -71,12 +73,25 @@ module.exports.processInputFiles = function (params) {
                 return allFinanceData;
             });
 
-        }).then((propertyFinanceData)=> {
-            if (propertyFinanceData) {
+        }).then((__propertyFinanceData)=>{
+            if (__propertyFinanceData) {
+                propertyFinanceData = __propertyFinanceData;
                 propertyData   = propertyFinanceData.property;
                 financialData  = propertyFinanceData.financial;
             }
-            let propertyGroupData, __propertyDataMap;
+            if(lperFile){
+                return  module.exports.parseLperFile(lperFile).then(function (__lperData) {
+                    lperData = __lperData;
+                   // console.log('lperData', lperData);
+                    return lperData;
+                });
+            } else {
+                return null;
+            }
+
+        }).then((__lperData)=> {
+            let propertyGroupData, __propertyDataMap, __lperDataMap;
+
             if (Array.isArray(financialData)){
                 financialData = financialData.map(function (item) {
                     if  (item.startDate && !moment.isDate(item.startDate)){
@@ -157,8 +172,13 @@ module.exports.processInputFiles = function (params) {
                 }
             }
 
-            let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
+            if(Array.isArray(lperData)){
+                __lperDataMap = _.keyBy(lperData, function (item) {
+                   return [_.trim(item.loanId), _.trim(item.prospectusLoanId)].join('-');
+                });
+            }
 
+            let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
             loanCollections = loanCollections.map(function (loanItem) {
                 otherPropertyKeys.forEach(function (keyName) {
                     if(!Array.isArray(loanItem[keyName])) {
@@ -237,7 +257,6 @@ module.exports.processInputFiles = function (params) {
                 if (loanItem &&  loanItem.loanId){
                     return parseInt(loanItem.loanId.toString());
                 }
-
                 return null;
             });
 
@@ -253,6 +272,14 @@ module.exports.processInputFiles = function (params) {
                             propertyGroupData[loanForeignKey].forEach(function (dataItem) {
                                 loanItem.properties.push(dataItem);
                             });
+                        }
+                        if(__lperDataMap && __lperDataMap[loanForeignKey]){
+                            //console.log('yep!!! __lperDataMap[loanForeignKey] exists!');
+                            Object.keys(__lperDataMap[loanForeignKey]).filter(lperDataKey => lperDataKey !== 'loanId' &&  lperDataKey !== 'prospectusLoanId' &&   lperDataKey !== 'transactionId').forEach(function (lperDataKey) {
+                                loanItem[lperDataKey] = __lperDataMap[loanForeignKey][lperDataKey];
+                                  //  console.log('lperDataKey', lperDataKey);
+                            });
+                            // __lperDataMap[loanForeignKey]
                         }
                     }
 
@@ -295,6 +322,19 @@ module.exports.parseLoanFile = function (file) {
         excelParserService.parseBinaryFile(contentPath, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable.loan)).catch(err => reject(err));
     });
 };
+
+
+module.exports.parseLperFile = function (file) {
+    return   new Promise((resolve,  reject) => {
+        debugger;
+        let parsedFileContent =  getFileFromBas64String(file);
+        let contentPath = parsedFileContent.base64String;
+        let sheetMapper = {
+            "all"  :  { name : "iprs" }
+        };
+        excelParserService.parseLperFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
+    });
+}
 
 
 

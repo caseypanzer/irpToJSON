@@ -5,20 +5,22 @@
 
 var  _ = require('lodash');
 var fs = require('fs');
-var path  = require('path');
 var dataParser = require('../services/dataParser');
-var awsService = require('../services/awsService');
 
 module.exports.upload = function (req, res, params, next) {
 
-    let loanFile, serviceFile;
+    let loanFile, serviceFile, lperFile;
     if(params.loanFile && params.serviceFile){
          loanFile   = decodeURIComponent(params.loanFile); //new  Buffer(params.loanFile, 'base64');
          serviceFile = params.serviceFile.map((_serviceFile)=> decodeURIComponent(_serviceFile));
     }
 
+    if(params.lperFile){
+        lperFile = decodeURIComponent(params.lperFile);
+    }
+
     if (loanFile && serviceFile){
-        dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile}).then(function (investmentJson) {
+        dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile, lperFile: lperFile}).then(function (investmentJson) {
            // next(new Error('Test  Error'));
             //console.log('investmentJson', investmentJson);
             res.json(investmentJson);

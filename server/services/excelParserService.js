@@ -6,6 +6,7 @@
 
 const  _       = require('lodash');
 const XLSX     = require('xlsx');
+const lperFileParserService = require('./lperFileParserService');
 
 
 /***
@@ -116,7 +117,6 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                         if(row.some((item) => item !== '')){
                                             _rowData.push(row);
                                         }
-
                                     });
 
                                      // console.log(_rowData);
@@ -191,6 +191,45 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
 };
 
 
+
+module.exports.parseLperFile = function (contentPath, params) {
+    return  new  Promise((resolve, reject) =>  {
+        setImmediate(() => {
+            let workbook, tableData  =  {};
+            let jsonDataKeys = {};
+            if (params.jsonDataKeys){
+                jsonDataKeys  =  params.jsonDataKeys;
+            }
+            let sheetMapper =  params.sheetMapper ?  _.cloneDeep(params.sheetMapper) : {};
+            let sheetMapperKeys = Object.keys(sheetMapper);
+            try {
+                workbook = XLSX.read(contentPath,  {type:'base64', cellDates: true });
+            } catch(ex){
+                console.log('Error at  parsing excel file content',  ex);
+                return reject(new Error('Unable to parse  the provided file.'))
+            }
+            if (workbook && Array.isArray(workbook.SheetNames)) {
+                workbook.SheetNames.forEach(function (sheetName, index) {
+                    let checkResult = isSheetAllowed(sheetMapperKeys, sheetName);
+                    let checkResultPropertyName = checkResult.propertyName;
+                    if (checkResult && checkResult.isAllowed) {
+                        let worksheet = workbook.Sheets[sheetName];
+                        if (worksheet) {
+                            let nickName =  sheetMapper[checkResultPropertyName] ? _.camelCase(sheetMapper[checkResultPropertyName].name) : (sheetMapper.all && sheetMapper.all.name? _.camelCase(sheetMapper.all.name) : 'data');
+                            tableData = [];
+                            let dataByRowIndex = _getDataByRow(worksheet);
+                            Object.keys(dataByRowIndex).forEach(function (rowKey) {
+                                let row = _collectRowData(dataByRowIndex, rowKey);
+                                tableData.push(row);
+                            });
+                        }
+                    }
+                });
+            }
+            resolve(lperFileParserService.mapLperData(tableData));
+        });
+    });
+};
 /**
  * Private methods
  */

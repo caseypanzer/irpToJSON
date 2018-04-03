@@ -2,11 +2,13 @@
  * Created by sajibsarkar on 4/3/18.
  */
 
+const _ = require('lodash');
+const moment = require('moment');
+
 var IprFields = [
     { name: 'transactionId', type: 'an', example: 'XXX97001' },
-    { name: 'groupId', type: 'an', example: 'XXX9701A' },
-    { name: 'loanId', type: 'an', example: '12345' },
-    { name: 'prospectusLoanId', type: 'an', example: '123' },
+    { name: 'loanId', type: 'an', example: 'XXX9701A' },
+    { name: 'prospectusLoanId', type: 'an', example: '12345' },
     { name: 'originalNoteAmount', type: 'numeric', example: '1000000' },
     { name: 'originalTermOfLoan', type: 'numeric', example: '240' },
     { name: 'originalAmortizationTerm', type: 'numeric', example: '360' },
@@ -99,3 +101,45 @@ var IprFields = [
     { name: 'servicingAdvanceMethodology', type: 'numeric', example: '1' },
     { name: 'valuationSourceAtContribution', type: 'numeric', example: '1' }
 ];
+
+
+
+module.exports.mapLperData = function (data) {
+    let results = [];
+    if(Array.isArray(data)){
+        let emptyColumnPos = {};
+        data.map(function (dataRowItems) {
+            let resultItem = {};
+            if(Array.isArray(dataRowItems) &&  dataRowItems.length > 0){
+                let len = _.size(dataRowItems);
+                for(let  i=0; i <  len; i++){
+                    let fieldItem  =  IprFields[i];
+                    if(fieldItem &&  fieldItem.name){
+                        let __val = dataRowItems[i];
+                        if(fieldItem.type === 'date'){
+                            if(fieldItem.format){
+                                __val = moment(__val, fieldItem.format).toDate();
+                            } else {
+                                __val = new Date(__val);
+                            }
+                        } else if(fieldItem.type === 'numeric'){
+                            __val = parseFloat(__val.toString());
+                        }
+                        resultItem[fieldItem.name]  = __val;
+                    }
+                }
+            }
+           // console.log('rowItems.length', dataRowItems.length);
+
+           // console.log('resultItem', resultItem);
+            if(Object.keys(resultItem).length > 0){
+                results.push(resultItem);
+            }
+
+        });
+
+
+        //console.log('emptyColumnPos', emptyColumnPos);
+    }
+    return  results;
+};
