@@ -361,7 +361,21 @@ module.exports.parseLoanFile = function (file) {
         let sheetMapper = {
             "all"  :  { name : "loan" }
         };
-        excelParserService.parseBinaryFile(contentPath, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable.loan)).catch(err => reject(err));
+        excelParserService.parseBinaryFile(contentPath, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => {
+
+            if(Array.isArray(refDataTable.loan)){
+                refDataTable.loan = refDataTable.loan.map(function (loanItem) {
+
+                        let newLoanItem = _.pick(loanItem,  'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
+
+                        newLoanItem.loanSetUp = [loanItem];
+
+                        return newLoanItem;
+                });
+            }
+            resolve(refDataTable.loan);
+
+        }).catch(err => reject(err));
     });
 };
 
@@ -376,7 +390,7 @@ module.exports.parseLperFile = function (file) {
         };
         excelParserService.parseLperFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
     });
-}
+};
 
 
 

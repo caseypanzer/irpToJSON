@@ -289,6 +289,41 @@
         return grandPeriodicNode;
 
     }
+
+
+    function _prepareLoanSetUpNode(investment){
+
+        let grandLoanSetupNode = {
+            text: 'loanSetUp',
+            children: []
+        };
+
+        if (Array.isArray(investment.loanSetUp)) {
+
+            investment.loanSetUp.forEach(function(loanSetupData) {
+                let loanSetupNode = {
+                    text: loanSetupData.prospectusLoanId,
+                    children: []
+                };
+
+                Object.keys(loanSetupData).forEach(function(propKey) {
+                    if (!Array.isArray(loanSetupData[propKey])) {
+                        let loanSetupNodeItem = {
+                            text: [propKey, loanSetupData[propKey]].join(' : '),
+                            icon: 'none'
+                        };
+                        loanSetupNode.children.push(loanSetupNodeItem);
+                    }
+                });
+                grandLoanSetupNode.children.push(loanSetupNode);
+            });
+        }
+        return grandLoanSetupNode;
+
+    }
+
+
+
     function _prepareOtherPropertyNode(investment, otherPropertyKeys) {
         let _otherGrandNodes = [];
 
@@ -436,9 +471,13 @@
             }
         });
 
+       let  grandLoanSetupNode =  _prepareLoanSetUpNode(investment);
+
         let grandPeriodicUpdateNode = _preparePeriodeicUpdateNode(investment);
 
         let grandPropertiesNode = _preparePropertiesNode(investment);
+
+        investmentNode.children.push(grandLoanSetupNode);
 
         investmentNode.children.push(grandPeriodicUpdateNode);
 
