@@ -287,7 +287,7 @@
                                     core: {
                                         data: {
                                             text: 'Investments',
-                                            state: { opened: true },
+                                            state: { opened: false },
                                             children: $ctrl.treeJsonData
                                         }
                                     }
