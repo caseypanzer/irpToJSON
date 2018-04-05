@@ -8,6 +8,7 @@ const  _           = require('lodash');
 const moment       = require('moment');
 const excelParserService = require('./excelParserService');
 const jsonDataKeys = require('../input-files/keyNames.json');
+const sortKeys = require('sort-keys');
 
 Object.keys(jsonDataKeys).forEach(function (keyName) {
     if(Array.isArray(jsonDataKeys[keyName])){
@@ -91,13 +92,13 @@ module.exports.processInputFiles = function (params) {
                 if(Array.isArray(_financeDataCollection)){
                     _financeDataCollection.forEach(function (_financeData) {
                        //console.log('Object.keys(_financeData)', Object.keys(_financeData));
-                        Object.keys(_financeData).forEach(function (_keyName) {
+                        _.sortBy(Object.keys(_financeData)).forEach(function (_keyName) {
                             if(!allFinanceData[_keyName]){
                                 allFinanceData[_keyName] = [];
                             }
                             if(Array.isArray(_financeData[_keyName])){
                                 _financeData[_keyName].forEach(function (dataItem) {
-                                    allFinanceData[_keyName].push(dataItem);
+                                    allFinanceData[_keyName].push(sortKeys(dataItem,  {deep:  true}));
                                 })
                             }
 
@@ -125,7 +126,7 @@ module.exports.processInputFiles = function (params) {
                     __lperData.forEach(function (actualLperData) {
                         if(Array.isArray(actualLperData)){
                             actualLperData.forEach(function (__data) {
-                                lperData.push(__data);
+                                lperData.push(sortKeys(__data,  {deep: true}));
                             });
                         }
                     });
@@ -225,6 +226,40 @@ module.exports.processInputFiles = function (params) {
                 });
             }
 
+            propertyGroupData = _.groupBy(propertyData,  function (item) {
+                return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
+            });
+
+            loanCollections = _.sortBy(loanCollections, function (loanItem) {
+                if (loanItem &&  loanItem.loanId){
+                    return parseInt(loanItem.loanId.toString());
+                }
+                return null;
+            });
+
+
+            if(Array.isArray(loanCollections)){
+                loanCollections = loanCollections.map(function (loanItem) {
+                    if(loanItem){
+                        if(!Array.isArray(loanItem.properties)){
+                            loanItem.properties = [];
+                        }
+                        let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
+                        if (propertyGroupData && propertyGroupData[loanForeignKey]){
+                            propertyGroupData[loanForeignKey].forEach(function (dataItem) {
+                                loanItem.properties.push(dataItem);
+                            });
+                        }
+                        if(__lperDataMap && __lperDataMap[loanForeignKey]){
+                            loanItem.loanPeriodicUpdate = [__lperDataMap[loanForeignKey]];
+                        }
+                    }
+
+                    // console.log('loanItem.properties', loanItem.properties);
+                    return  loanItem;
+                });
+            }
+
             let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
             loanCollections = loanCollections.map(function (loanItem) {
                 otherPropertyKeys.forEach(function (keyName) {
@@ -296,39 +331,7 @@ module.exports.processInputFiles = function (params) {
                 }
             });
 
-            propertyGroupData = _.groupBy(propertyData,  function (item) {
-                return [_.trim(item.loanId) , _.trim(item.prospectusLoanId)].join('-');
-            });
 
-            loanCollections = _.sortBy(loanCollections, function (loanItem) {
-                if (loanItem &&  loanItem.loanId){
-                    return parseInt(loanItem.loanId.toString());
-                }
-                return null;
-            });
-
-
-            if(Array.isArray(loanCollections)){
-                loanCollections = loanCollections.map(function (loanItem) {
-                    if(loanItem){
-                        if(!Array.isArray(loanItem.properties)){
-                            loanItem.properties = [];
-                        }
-                        let  loanForeignKey = [_.trim(loanItem.loanId), _.trim(loanItem.prospectusLoanId)].join('-');
-                        if (propertyGroupData && propertyGroupData[loanForeignKey]){
-                            propertyGroupData[loanForeignKey].forEach(function (dataItem) {
-                                loanItem.properties.push(dataItem);
-                            });
-                        }
-                        if(__lperDataMap && __lperDataMap[loanForeignKey]){
-                            loanItem.loanPeriodicUpdate = [__lperDataMap[loanForeignKey]];
-                        }
-                    }
-
-                   // console.log('loanItem.properties', loanItem.properties);
-                    return  loanItem;
-                });
-            }
 
 
 
@@ -368,7 +371,7 @@ module.exports.parseLoanFile = function (file) {
 
                         let newLoanItem = _.pick(loanItem,  'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
 
-                        newLoanItem.loanSetUp = [loanItem];
+                        newLoanItem.loanSetUp = [sortKeys(loanItem, {  deep: true})];
 
                         return newLoanItem;
                 });
