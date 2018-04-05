@@ -197,18 +197,8 @@
         "netOperatingIncomeIndicatorAtContribution",
         "valuationSourceAtContribution"
     ],
-    "financial": [
-        "transactionId",
-        "loanId",
-        "propertyId",
-        "startDate",
-        "endDate",
-        "dataType",
-        "stmtType",
-        "categoryCode",
-        "amount"
-    ],
-    "rptddelinquentloanstatus":  [
+    "financial": ["transactionId", "loanId", "propertyId", "startDate", "endDate", "dataType", "stmtType", "categoryCode", "amount"],
+    "rptddelinquentloanstatus": [
         "Loan ID",
         "Paid Through Date",
         "Cumulative ASER Amount",
@@ -246,25 +236,9 @@
         "Modification Execution Date",
         "Modification Booking Date"
     ],
-    "rptwservicerwatchlistirp":[
-      "Loan ID",
-      "Date Added to Watchlist",
-      "Trigger Codes",
-      "Comment/Action to be taken",
-      "Informational or Credit"
-    ],
-      "rptrsvloc":[
-        "Loan ID",
-        "Reserve Account Type",
-        "Reserve Balance at Contribution",
-        "Beginning Reserve Balance",
-        "Reserve Deposits",
-        "Reserve Disbursements",
-        "Ending Reserve Balance",
-        "LOC Expiration Date",
-        "Comments Loan Level Reserve/LOC"
-      ],
-      "rptadvrecovery":[
+    "rptwservicerwatchlistirp": ["Loan ID", "Date Added to Watchlist", "Trigger Codes", "Comment/Action to be taken", "Informational or Credit"],
+    "rptrsvloc": ["Loan ID", "Reserve Account Type", "Reserve Balance at Contribution", "Beginning Reserve Balance", "Reserve Deposits", "Reserve Disbursements", "Ending Reserve Balance", "LOC Expiration Date", "Comments Loan Level Reserve/LOC"],
+    "rptadvrecovery": [
         "Loan ID",
         "WODRA / Deemed Non- Recoverable Date",
         "Advance Interest",
@@ -280,8 +254,8 @@
         "Comments- Advance Recovery",
         "Actual Balance",
         "Current Hyper Amortizing Date"
-      ],
-      "rptreostatus":[
+    ],
+    "rptreostatus": [
         "Loan ID",
         "Property ID",
         "Paid Through Date",
@@ -296,13 +270,9 @@
         "REO Date",
         "Date Asset Expected to be Resolved or Foreclosed",
         "Comments - REO"
-      ],
-  "tccomparativefinancialstatusirp":[
-    "Loan ID",
-    "Property ID",
-    "Prospectus ID"
-  ],
-    "rptttotalloan":[
+    ],
+    "tccomparativefinancialstatusirp": ["Loan ID", "Property ID", "Prospectus ID"],
+    "rpttotalloan": [
         "Transaction ID",
         "Group ID",
         "LOAN ID",

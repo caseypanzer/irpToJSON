@@ -9,6 +9,8 @@ var dataParser = require('../services/dataParser');
 
 module.exports.upload = function (req, res, params, next) {
 
+    let timseStart = Date.now();
+
     let loanFile, serviceFile, lperFile;
     if(params.loanFile && params.serviceFile){
          loanFile   = decodeURIComponent(params.loanFile); //new  Buffer(params.loanFile, 'base64');
@@ -22,11 +24,8 @@ module.exports.upload = function (req, res, params, next) {
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile, lperFile: lperFile}).then(function (investmentJson) {
            // next(new Error('Test  Error'));
-            investmentJson.Investments.forEach(function (item) {
-                if(item.loanId.toString() === '305950001'){
-                   // console.log('investmentJson', item);
-                }
-            })
+
+            console.log('Total time required ', Date.now() - timseStart, 'ms');
 
             res.json(investmentJson);
             setImmediate(() => {

@@ -215,6 +215,6 @@ module.exports.mapLperData = function(data) {
 
         //console.log('emptyColumnPos', emptyColumnPos);
     }
-    console.log('resultItem', _.head(results));
+    //console.log('resultItem', _.head(results));
     return results;
 };

@@ -14,7 +14,7 @@
         'rptrsvloc',
         // 'rptreostatus',
         'rptwservicerwatchlistirp',
-        'rptttotalloan',
+        'rpttotalloan',
         'rptadvrecovery'
     ];
 
@@ -259,6 +259,36 @@
         return grandPropertiesNode;
     }
 
+    function _preparePeriodeicUpdateNode(investment){
+
+        let grandPeriodicNode = {
+            text: 'loanPeriodicUpdate',
+            children: []
+        };
+
+        if (Array.isArray(investment.loanPeriodicUpdate)) {
+
+            investment.loanPeriodicUpdate.forEach(function(periodicUpdateData) {
+                let periodicNode = {
+                    text: periodicUpdateData.paidThroughDate,
+                    children: []
+                };
+
+                Object.keys(periodicUpdateData).forEach(function(propKey) {
+                    if (!Array.isArray(periodicUpdateData[propKey])) {
+                        let propNodeItem = {
+                            text: [propKey, periodicUpdateData[propKey]].join(' : '),
+                            icon: 'none'
+                        };
+                        periodicNode.children.push(propNodeItem);
+                    }
+                });
+                grandPeriodicNode.children.push(periodicNode);
+            });
+        }
+        return grandPeriodicNode;
+
+    }
     function _prepareOtherPropertyNode(investment, otherPropertyKeys) {
         let _otherGrandNodes = [];
 
@@ -327,7 +357,7 @@
                         case 'tccomparativefinancialstatusirp':
                             otherPropertyGroupedKey = 'prospectusId';
                             break;
-                        case 'rptttotalloan':
+                        case 'rpttotalloan':
                             otherPropertyGroupedKey = 'paidThruDate';
                             break;
                     }
@@ -406,8 +436,14 @@
             }
         });
 
+        let grandPeriodicUpdateNode = _preparePeriodeicUpdateNode(investment);
+
         let grandPropertiesNode = _preparePropertiesNode(investment);
+
+        investmentNode.children.push(grandPeriodicUpdateNode);
+
         investmentNode.children.push(grandPropertiesNode);
+
         let _otherPropertyNode = _prepareOtherPropertyNode(
             investment,
             otherPropertyKeys

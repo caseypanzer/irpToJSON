@@ -21,7 +21,7 @@
             'rptreostatus',
             'rptwservicerwatchlistirp',
             'rptadvrecovery',
-            'rptttotalloan',
+            'rpttotalloan',
             //'lpr'
         ]
     });

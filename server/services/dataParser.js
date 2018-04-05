@@ -9,6 +9,14 @@ const moment       = require('moment');
 const excelParserService = require('./excelParserService');
 const jsonDataKeys = require('../input-files/keyNames.json');
 
+Object.keys(jsonDataKeys).forEach(function (keyName) {
+    if(Array.isArray(jsonDataKeys[keyName])){
+        jsonDataKeys[keyName] = jsonDataKeys[keyName].map(item => _.camelCase(item));
+    }
+});
+
+//let  workerFarm = require('./workerFarm');
+
 const financialSheetMapper               = {
     "property"                          : { name: "property" },
     "financial"                         : { name: "financial" },
@@ -18,7 +26,7 @@ const financialSheetMapper               = {
     'rptrsvloc'                          : { name: 'rptrsvloc', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptreostatus'                       : { name: 'rptreostatus' , isHeaderRowExists: true, primaryKey: 'propertyId' },
     'rptwservicerwatchlistirp'           : { name: 'rptwservicerwatchlistirp', isHeaderRowExists: true , primaryKey: 'loanId'  },
-    'rptttotalloan'                      : { name: 'rptttotalloan', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rpttotalloan'                      : { name: 'rpttotalloan', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptadvrecovery'                     : { name: 'rptadvrecovery', isHeaderRowExists: true,  primaryKey: 'loanId'  },
     'lpr'                                : { name: 'lpr', isHeaderRowExists: false,  primaryKey: 'loanId'  }
 };
@@ -46,6 +54,31 @@ module.exports.processInputFiles = function (params) {
 
             let _promises = [];
 
+           /* return  workerFarm.processFiles(serviceFile).then(function (_financeDataCollection) {
+
+                let allFinanceData = {};
+
+                if(Array.isArray(_financeDataCollection)){
+                    _financeDataCollection.forEach(function (_financeData) {
+                        // console.log('Object.keys(_financeData)', Object.keys(_financeData));
+                        Object.keys(_financeData).forEach(function (_keyName) {
+                            if(!allFinanceData[_keyName]){
+                                allFinanceData[_keyName] = [];
+                            }
+                            if(Array.isArray(_financeData[_keyName])){
+                                _financeData[_keyName].forEach(function (dataItem) {
+                                    allFinanceData[_keyName].push(dataItem);
+                                })
+                            }
+                        });
+                    })
+                }
+                console.log('Completed call for workerFarm.processFiles');
+                return allFinanceData;
+            });
+
+            return false;*/
+
             serviceFile.forEach(function (_serviceFile) {
                 _promises.push(module.exports.parsePropertyFinancialData(_serviceFile));
             });
@@ -57,7 +90,7 @@ module.exports.processInputFiles = function (params) {
 
                 if(Array.isArray(_financeDataCollection)){
                     _financeDataCollection.forEach(function (_financeData) {
-                      // console.log('Object.keys(_financeData)', Object.keys(_financeData));
+                       //console.log('Object.keys(_financeData)', Object.keys(_financeData));
                         Object.keys(_financeData).forEach(function (_keyName) {
                             if(!allFinanceData[_keyName]){
                                 allFinanceData[_keyName] = [];
@@ -66,6 +99,10 @@ module.exports.processInputFiles = function (params) {
                                 _financeData[_keyName].forEach(function (dataItem) {
                                     allFinanceData[_keyName].push(dataItem);
                                 })
+                            }
+
+                            if(_keyName === 'rpttotalloan'){
+                              //  console.log('total rpttotalloan' , allFinanceData[_keyName])
                             }
                         });
                     })
@@ -284,18 +321,7 @@ module.exports.processInputFiles = function (params) {
                             });
                         }
                         if(__lperDataMap && __lperDataMap[loanForeignKey]){
-                            //console.log('yep!!! __lperDataMap[loanForeignKey] exists!');
-                            Object.keys(__lperDataMap[loanForeignKey]).filter(lperDataKey => lperDataKey !== 'loanId' &&  lperDataKey !== 'prospectusLoanId' &&   lperDataKey !== 'transactionId').forEach(function (lperDataKey) {
-
-                                if(typeof __lperDataMap[loanForeignKey][lperDataKey] !== 'undefined' && !_.isNull(__lperDataMap[loanForeignKey][lperDataKey])){
-                                    loanItem[lperDataKey] = __lperDataMap[loanForeignKey][lperDataKey];
-                                }  else if(typeof loanItem[lperDataKey] === 'undefined'){
-                                    loanItem[lperDataKey] = undefined;
-                                }
-
-                                  //  console.log('lperDataKey', lperDataKey);
-                            });
-                            // __lperDataMap[loanForeignKey]
+                            loanItem.loanPeriodicUpdate = [__lperDataMap[loanForeignKey]];
                         }
                     }
 

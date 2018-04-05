@@ -69,7 +69,7 @@ module.exports.parseBinaryFile = function (contentPath, params) {
 function hasValidHeaders(_cols, jsonKeyMap) {
     let  _hasValidHeader = jsonKeyMap.some(function (item) {
         // console.log('item', item);
-        return _cols.indexOf(item) > -1;
+        return _cols.map(_colVal=> _.camelCase(_colVal)).indexOf(item) > -1;
     });
     return  _hasValidHeader;
 }
@@ -104,10 +104,14 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                             let dataByRowIndex = _getDataByRow(worksheet);
 
                             if(sheetMapper[checkResultPropertyName] && sheetMapper[checkResultPropertyName].isHeaderRowExists){
-                                console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
+                                //console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
                                 let jsonKeyMap = jsonDataKeys[checkResultPropertyName];
+
                                 let headersIndex = [];
 
+                                if(sheetName === 'rpttotalloan'){
+                                    debugger;
+                                }
                                 if (jsonKeyMap){
 
                                     //console.log('jsonKeyMap', jsonKeyMap);
@@ -120,16 +124,15 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                         }
                                     });
 
-
-                                     //
                                     for (let i=0; i <_rowData.length; i++){
                                         let  _cols = _rowData[i];
                                        // console.log('_cols', _cols);
                                         if(hasValidHeaders(_cols, jsonKeyMap)){
                                             headerRowIndex =  i;
                                             for (let indx=0; indx < _cols.length; indx++){
-                                                if(_cols[indx] && jsonKeyMap.indexOf(_cols[indx]) > -1){
-                                                    headersIndex[indx] = _cols[indx];
+                                                let __colVal = _.camelCase(_cols[indx]);
+                                                if(__colVal && jsonKeyMap.indexOf(__colVal) > -1){
+                                                    headersIndex[indx] = __colVal;
                                                 }
                                             }
                                             //console.log('sheetName, headerRowIndex, headersIndex', sheetName, headerRowIndex, headersIndex );

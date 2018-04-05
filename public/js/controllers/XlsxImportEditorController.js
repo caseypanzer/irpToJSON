@@ -9,7 +9,6 @@
 
     var XLSX = require('xlsx');
 
-
     module.controller('XlsxImportEditorController', [
         '$scope',
         '$state',
@@ -20,17 +19,7 @@
         'ModalService',
         '$modalInstance',
         '$sce',
-        function(
-            $scope,
-            $state,
-            toastr,
-            InvestmentTreeHelper,
-            AppConstants,
-            params,
-            ModalService,
-            $modalInstance,
-            $sce
-        ) {
+        function($scope, $state, toastr, InvestmentTreeHelper, AppConstants, params, ModalService, $modalInstance, $sce) {
             var $ctrl = this;
 
             $ctrl.isProcessing = true;
@@ -53,12 +42,7 @@
             $ctrl.submit = function() {
                 if (Array.isArray($ctrl.htmlTables)) {
                     let inValidSheetName = $ctrl.htmlTables.find(function(sheetName) {
-                        return (
-                            typeof sheetName === 'undefined' ||
-                            sheetName === 'Sheet1' ||
-                            sheetName === null ||
-                            sheetName === ''
-                        );
+                        return typeof sheetName === 'undefined' || sheetName === 'Sheet1' || sheetName === null || sheetName === '';
                     });
 
                     if (inValidSheetName) {
@@ -71,7 +55,7 @@
                         wb.Sheets[sheetName] = $ctrl.workbook.Sheets[sheetName];
                     });
 
-                    var wbout = XLSX.write(wb, { type: 'binary', bookSST: false, bookType: 'xlsx' });
+                    var wbout = XLSX.write(wb, { cellDates: true, type: 'binary', bookSST: false, bookType: 'xlsx' });
                     let s2ab = function(s) {
                         var buf = new ArrayBuffer(s.length);
                         var view = new Uint8Array(buf);
@@ -123,11 +107,10 @@
 
             function xw(data, cb) {
                 try {
-                    let workbook = XLSX.read(data, { type: 'binary',cellDates: true });
+                    let workbook = XLSX.read(data, { type: 'binary', cellDates: true });
                     cb(workbook);
                 } catch (ex) {
-                    var message =
-                        'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
+                    var message = 'Failed to read the uploaded file. Please check if it contains unsupported characters or formats.';
                     console.log(ex);
                     cb(null);
                 }
@@ -137,8 +120,7 @@
                 var o = '',
                     l = 0,
                     w = 10240;
-                for (; l < data.byteLength / w; ++l)
-                    o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)));
+                for (; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)));
                 o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)));
                 return o;
             }
@@ -160,7 +142,7 @@
                     }
                     $ctrl.isProcessing = false;
                     if ($ctrl.isLoanFile === true) {
-                         $ctrl.submit();
+                        $ctrl.submit();
                     } else {
                         $scope.$applyAsync();
                     }
