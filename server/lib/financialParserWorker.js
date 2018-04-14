@@ -3,89 +3,97 @@
  */
 require('v8-compile-cache');
 const sortKeys = require('sort-keys');
-const  _           = require('lodash');
+const _ = require('lodash');
 let excelParserService = require('../services/excelParserService');
 
-exports.init =  function(options, callback) {
+exports.init = function(options, callback) {
     Object.assign(process.env, options.env || {});
     callback();
 };
 
-
-exports.run =   function(taskName, file, params, callback) {
-    let  startTime = Date.now();
+exports.run = function(taskName, file, params, callback) {
+    let startTime = Date.now();
     console.log(`Process started as pid: ${process.pid}`);
 
-    let  _methodName = taskName  === 'financialParse' ?  '_processFinancialFile': '';
-    switch  (taskName){
-        case 'parseLoanFile' :  _methodName = 'parseLoanFile';
+    let _methodName = taskName === 'financialParse' ? '_processFinancialFile' : '';
+    switch (taskName) {
+        case 'parseLoanFile':
+            _methodName = 'parseLoanFile';
             break;
-        case 'financialParse' :  _methodName = '_processFinancialFile';
-                            break;
-        case 'parseLperFile' :  _methodName = 'parseLperFile';
+        case 'financialParse':
+            _methodName = '_processFinancialFile';
             break;
-        case 'default' :  _methodName = taskName;
+        case 'parseLperFile':
+            _methodName = 'parseLperFile';
+            break;
+        case 'default':
+            _methodName = taskName;
             break;
     }
-   // console.log('_methodName', _methodName);
-    exports[_methodName].call(null, file, params).then(results=>{
-        console.log(`pid: ${process.pid} took time` , Date.now() -startTime);
-        _cleanMemory();
-         callback(null,  results);
-     }).catch(err=>{
-         console.log(err);
-        _cleanMemory();
-         callback(err)
-    });
+    // console.log('_methodName', _methodName);
+    exports[_methodName]
+        .call(null, file, params)
+        .then(results => {
+            console.log(`pid: ${process.pid} took time`, Date.now() - startTime);
+            _cleanMemory();
+            callback(null, results);
+        })
+        .catch(err => {
+            console.log(err);
+            _cleanMemory();
+            callback(err);
+        });
 };
-
-
 
 /***
  * Parse the loan tab data   from tsv file
  * @returns {Promise}
  */
-module.exports.parseLoanFile = function (file, params) {
-    return   new Promise((resolve,  reject) => {
-        let parsedFileContent =  getFileFromBas64String(file);
+module.exports.parseLoanFile = function(file, params) {
+    return new Promise((resolve, reject) => {
+        let parsedFileContent = getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
         let sheetMapper = {
-            "all"  :  { name : "loan" }
+            all: { name: 'loan' }
         };
-      //  console.log('contentPath', contentPath);
-        excelParserService.parseBinaryFile(contentPath, params).then((refDataTable) => {
-            debugger;
-            if(Array.isArray(refDataTable.loan)){
-                refDataTable.loan = refDataTable.loan.map(function (loanItem) {
-                    let newLoanItem = _.pick(loanItem,  'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
+        //  console.log('contentPath', contentPath);
+        excelParserService
+            .parseBinaryFile(contentPath, params)
+            .then(refDataTable => {
+                debugger;
+                if (Array.isArray(refDataTable.loan)) {
+                    refDataTable.loan = refDataTable.loan.map(function(loanItem) {
+                        let newLoanItem = _.pick(loanItem, 'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
 
-                    newLoanItem.loanSetUp = [sortKeys(loanItem, {  deep: true})];
+                        newLoanItem.loanSetUp = [sortKeys(loanItem, { deep: true })];
 
-                    return newLoanItem;
-                });
-            }
-            //console.log('refDataTable.loan', refDataTable.loan);
-            refDataTable.loan = refDataTable.loan.filter((loanItem)=> loanItem && loanItem.loanId && loanItem.loanId.length > 4 && loanItem.loanId !== 'Loan Id');
-            resolve(refDataTable.loan);
-
-        }).catch(err => reject(err));
+                        return newLoanItem;
+                    });
+                }
+                //console.log('refDataTable.loan', refDataTable.loan);
+                refDataTable.loan = refDataTable.loan.filter(loanItem => loanItem && loanItem.loanId && loanItem.loanId.length > 4 && loanItem.loanId !== 'Loan Id');
+                resolve(refDataTable.loan);
+            })
+            .catch(err => reject(err));
     });
 };
 
-exports._processFinancialFile = function (file, params){
+exports._processFinancialFile = function(file, params) {
     return excelParserService.parseFinancialBinaryFile(file, params);
 };
 
-
-module.exports.parseLperFile = function (file, params) {
-    return   new Promise((resolve,  reject) => {
-        let parsedFileContent =  getFileFromBas64String(file);
+module.exports.parseLperFile = function(file, params) {
+    return new Promise((resolve, reject) => {
+        let parsedFileContent = getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
         let sheetMapper = {
-            "all"  :  { name : "iprs" }
+            all: { name: 'iprs' }
         };
         params.sheetMapper = sheetMapper;
-        excelParserService.parseLperFile(contentPath, params).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
+        excelParserService
+            .parseLperFile(contentPath, params)
+            .then(refDataTable => resolve(refDataTable))
+            .catch(err => reject(err));
     });
 };
 
@@ -96,17 +104,14 @@ process.on('unhandledRejection', function(err) {
     }
 });
 
-
-
-
 function getFileFromBas64String(fileText) {
-    let bas64Marker = ";base64,";
+    let bas64Marker = ';base64,';
     let bas64MarkerIndex = fileText.indexOf(bas64Marker);
-    let rawBase64String  =  fileText.substring(bas64MarkerIndex+bas64Marker.length);
-    let contentType = fileText.substring(0, bas64MarkerIndex).replace(/^data:/,'');
+    let rawBase64String = fileText.substring(bas64MarkerIndex + bas64Marker.length);
+    let contentType = fileText.substring(0, bas64MarkerIndex).replace(/^data:/, '');
     return {
         fileType: contentType,
-        base64String : rawBase64String
+        base64String: rawBase64String
     };
 }
 
