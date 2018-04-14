@@ -60,7 +60,6 @@ module.exports.parseLoanFile = function(file, params) {
         excelParserService
             .parseBinaryFile(contentPath, params)
             .then(refDataTable => {
-                debugger;
                 if (Array.isArray(refDataTable.loan)) {
                     refDataTable.loan = refDataTable.loan.map(function(loanItem) {
                         let newLoanItem = _.pick(loanItem, 'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
@@ -79,7 +78,13 @@ module.exports.parseLoanFile = function(file, params) {
 };
 
 exports._processFinancialFile = function(file, params) {
-    return excelParserService.parseFinancialBinaryFile(file, params);
+    return new Promise((resolve, reject) => {
+        let parsedFileContent = getFileFromBas64String(file);
+        let contentPath = parsedFileContent.base64String;
+        excelParserService.parseFinancialBinaryFile(contentPath, params).then(data => resolve(data))
+            .catch(err => reject(err));
+    });
+
 };
 
 module.exports.parseLperFile = function(file, params) {

@@ -7,6 +7,7 @@
 const  _       = require('lodash');
 const XLSX     = require('xlsx');
 const lperFileParserService = require('./lperFileParserService');
+const moment = require('moment');
 
 
 /***
@@ -68,7 +69,6 @@ module.exports.parseBinaryFile = function (contentPath, params) {
 
 module.exports.parseFinancialBinaryFile = function (contentPath, params) {
     return  new  Promise((resolve, reject) =>  {
-        setImmediate(() => {
             let workbook, tableData  =  {};
             let jsonDataKeys = {};
             if (params.jsonDataKeys){
@@ -83,8 +83,10 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                 return reject(new Error('Unable to parse  the provided file.'))
             }
 
+            // console.log('workbook.SheetNames', workbook.SheetNames);
             if (workbook && Array.isArray(workbook.SheetNames)) {
                 workbook.SheetNames.forEach(function (sheetName, index) {
+
                     let checkResult = isSheetAllowed(sheetMapperKeys, sheetName);
                     let checkResultPropertyName = checkResult.propertyName;
                     if (checkResult && checkResult.isAllowed) {
@@ -100,10 +102,6 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                 let jsonKeyMap = jsonDataKeys[checkResultPropertyName];
 
                                 let headersIndex = [];
-
-                                if(sheetName === 'rpttotalloan'){
-                                    debugger;
-                                }
                                 if (jsonKeyMap){
 
                                     //console.log('jsonKeyMap', jsonKeyMap);
@@ -186,7 +184,6 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
             }
             resolve(tableData);
         });
-    });
 };
 
 

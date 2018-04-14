@@ -55,7 +55,7 @@ module.exports.parseLoanFile = function (file, params) {
         };
       //  console.log('contentPath', contentPath);
         excelParserService.parseBinaryFile(contentPath, params).then((refDataTable) => {
-            debugger;
+
             if(Array.isArray(refDataTable.loan)){
                 refDataTable.loan = refDataTable.loan.map(function (loanItem) {
                     let newLoanItem = _.pick(loanItem,  'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
