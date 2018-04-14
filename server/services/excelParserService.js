@@ -66,14 +66,6 @@ module.exports.parseBinaryFile = function (contentPath, params) {
 };
 
 
-function hasValidHeaders(_cols, jsonKeyMap) {
-    let  _hasValidHeader = jsonKeyMap.some(function (item) {
-        // console.log('item', item);
-        return _cols.map(_colVal=> _.camelCase(_colVal)).indexOf(item) > -1;
-    });
-    return  _hasValidHeader;
-}
-
 module.exports.parseFinancialBinaryFile = function (contentPath, params) {
     return  new  Promise((resolve, reject) =>  {
         setImmediate(() => {
@@ -124,7 +116,8 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                                         }
                                     });
 
-                                    for (let i=0; i <_rowData.length; i++){
+                                    let rowLen = _rowData.length;
+                                    for (let i=0; i < rowLen; i++){
                                         let  _cols = _rowData[i];
                                        // console.log('_cols', _cols);
                                         if(hasValidHeaders(_cols, jsonKeyMap)){
@@ -239,6 +232,18 @@ module.exports.parseLperFile = function (contentPath, params) {
 /**
  * Private methods
  */
+
+
+
+
+function hasValidHeaders(_cols, jsonKeyMap) {
+    let  _hasValidHeader = jsonKeyMap.some(function (item) {
+        // console.log('item', item);
+        return _cols.map(_colVal=> _.camelCase(_colVal)).indexOf(item) > -1;
+    });
+    return  _hasValidHeader;
+}
+
 
 /***
  * Get column position based on Letters

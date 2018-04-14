@@ -16,29 +16,34 @@ Object.keys(jsonDataKeys).forEach(function (keyName) {
     }
 });
 
-//let  workerFarm = require('./workerFarm');
+let mWorkerFarm = require('../lib/mWorkerFarm');
+let financialParserWorker =  mWorkerFarm.getShared({workerPath : './financialParserWorker', maxConcurrentWorkers: 4});
+
 
 const financialSheetMapper               = {
-    "property"                          : { name: "property" },
-    "financial"                         : { name: "financial" },
+    "property"                           : { name: "property" },
+    "financial"                          : { name: "financial" },
     'tccomparativefinancialstatusirp'    : { name: 'tccomparativefinancialstatusirp', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptddelinquentloanstatus'           : { name: 'rptddelinquentloanstatus' , isHeaderRowExists: true, primaryKey: 'loanId' },
     'rptmhistoricalloanmod'              : { name: 'rptmhistoricalloanmod', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptrsvloc'                          : { name: 'rptrsvloc', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptreostatus'                       : { name: 'rptreostatus' , isHeaderRowExists: true, primaryKey: 'propertyId' },
     'rptwservicerwatchlistirp'           : { name: 'rptwservicerwatchlistirp', isHeaderRowExists: true , primaryKey: 'loanId'  },
-    'rpttotalloan'                      : { name: 'rpttotalloan', isHeaderRowExists: true, primaryKey: 'loanId'  },
+    'rpttotalloan'                       : { name: 'rpttotalloan', isHeaderRowExists: true, primaryKey: 'loanId'  },
     'rptadvrecovery'                     : { name: 'rptadvrecovery', isHeaderRowExists: true,  primaryKey: 'loanId'  },
     'lpr'                                : { name: 'lpr', isHeaderRowExists: false,  primaryKey: 'loanId'  }
 };
 
-module.exports.processInputFiles = function (params) {
+
+
+
+module.exports.processInputFiles =  async function (params) {
 
     return  new Promise((resolve, reject) => {
         let  { loanFile, serviceFile, lperFile }  = params;
 
         let loanCollections = [];
-        let propertyFinanceData, propertyData,  financialData, lperData;
+        let propertyFinanceData, propertyData,  financialData, lperData = [];
 
         if(!loanFile){
             return reject(new Error("loanFile parameter is missing"))
@@ -46,97 +51,60 @@ module.exports.processInputFiles = function (params) {
         if (!serviceFile){
             return reject(new Error("serviceFile parameter is missing"))
         }
+        let sheetMapper = {
+            "all"  :  { name : "loan" }
+        };
 
-        module.exports.parseLoanFile(loanFile).then((loans)=> {
 
+        let _innerPromises = [];
+
+        _innerPromises.push(financialParserWorker.run('parseLoanFile', loanFile, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper }).then((loans)=> {
             loanCollections = loans;
+            return { loanData: loans};
+        }));
 
-            loanCollections = loanCollections.filter((loanItem)=> loanItem && loanItem.loanId && loanItem.loanId.length > 4 && loanItem.loanId !== 'Loan Id');
+        serviceFile.map(file=> _innerPromises.push(financialParserWorker.run('financialParse', file, {jsonDataKeys: jsonDataKeys,  sheetMapper: financialSheetMapper}).then((data)=> { financialData:  data})));
 
-            let _promises = [];
 
-           /* return  workerFarm.processFiles(serviceFile).then(function (_financeDataCollection) {
+        if(Array.isArray(lperFile)) {
+            lperFile.map(__lperFile => _innerPromises.push(financialParserWorker.run('parseLperFile', __lperFile, {jsonDataKeys: jsonDataKeys}).then((lperDataItem) => {
+                if (Array.isArray(lperDataItem)) {
+                    lperDataItem.forEach(function (__data) {
+                        lperData.push(sortKeys(__data, {deep: true}));
+                    });
+                }
+                return { lperData: lperDataItem};
+            })));
+        }
 
-                let allFinanceData = {};
-
-                if(Array.isArray(_financeDataCollection)){
-                    _financeDataCollection.forEach(function (_financeData) {
-                        // console.log('Object.keys(_financeData)', Object.keys(_financeData));
-                        Object.keys(_financeData).forEach(function (_keyName) {
+        Promise.all(_innerPromises).then((dataCollection)=> {
+            let allFinanceData = {};
+            if(Array.isArray(dataCollection)){
+                dataCollection.forEach(function (_financeData) {
+                    if(_financeData &&  _financeData.financialData){
+                        Object.keys(_financeData.financialData).forEach(function (_keyName) {
                             if(!allFinanceData[_keyName]){
                                 allFinanceData[_keyName] = [];
                             }
-                            if(Array.isArray(_financeData[_keyName])){
-                                _financeData[_keyName].forEach(function (dataItem) {
+                            if(Array.isArray(_financeData.financialData[_keyName])){
+                                _financeData.financialData[_keyName].forEach(function (dataItem) {
                                     allFinanceData[_keyName].push(dataItem);
                                 })
                             }
                         });
-                    })
-                }
-                console.log('Completed call for workerFarm.processFiles');
-                return allFinanceData;
-            });
+                    }
 
-            return false;*/
-
-            serviceFile.forEach(function (_serviceFile) {
-                _promises.push(module.exports.parsePropertyFinancialData(_serviceFile));
-            });
-
-
-            return Promise.all(_promises).then(function (_financeDataCollection) {
-
-                let allFinanceData = {};
-
-                if(Array.isArray(_financeDataCollection)){
-                    _financeDataCollection.forEach(function (_financeData) {
-                       //console.log('Object.keys(_financeData)', Object.keys(_financeData));
-                        _.sortBy(Object.keys(_financeData)).forEach(function (_keyName) {
-                            if(!allFinanceData[_keyName]){
-                                allFinanceData[_keyName] = [];
-                            }
-                            if(Array.isArray(_financeData[_keyName])){
-                                _financeData[_keyName].forEach(function (dataItem) {
-                                    allFinanceData[_keyName].push(sortKeys(dataItem,  {deep:  true}));
-                                })
-                            }
-
-                            if(_keyName === 'rpttotalloan'){
-                              //  console.log('total rpttotalloan' , allFinanceData[_keyName])
-                            }
-                        });
-                    })
-                }
-                return allFinanceData;
-            });
-
-        }).then((__propertyFinanceData)=>{
-            if (__propertyFinanceData) {
-                propertyFinanceData = __propertyFinanceData;
+                })
+            }
+            console.log('Completed call for workerFarm.processFiles');
+            if (allFinanceData) {
+                propertyFinanceData = allFinanceData;
                 propertyData   = propertyFinanceData.property;
                 financialData  = propertyFinanceData.financial;
             }
+            return propertyFinanceData;
 
-            lperData = [];
-            let lperFilePromises =[];
-            if(Array.isArray(lperFile)){
-                lperFile.map(__lperFile => lperFilePromises.push(module.exports.parseLperFile(__lperFile)));
-                return  Promise.all(lperFilePromises).then(function (__lperData) {
-                    __lperData.forEach(function (actualLperData) {
-                        if(Array.isArray(actualLperData)){
-                            actualLperData.forEach(function (__data) {
-                                lperData.push(sortKeys(__data,  {deep: true}));
-                            });
-                        }
-                    });
-                    return lperData;
-                });
-            } else {
-                return null;
-            }
-
-        }).then((__lperData)=> {
+        }).then((__propertyFinanceData)=> {
 
             let propertyGroupData, __propertyDataMap, __lperDataMap;
 
@@ -150,6 +118,7 @@ module.exports.processInputFiles = function (params) {
                     }
                     return item;
                 });
+
                 let financialGroupedData = _.groupBy(financialData, function (item) {
                     return _.trim(item.propertyId);
                 });
@@ -236,8 +205,6 @@ module.exports.processInputFiles = function (params) {
                 }
                 return null;
             });
-
-
             if(Array.isArray(loanCollections)){
                 loanCollections = loanCollections.map(function (loanItem) {
                     if(loanItem){
@@ -259,7 +226,6 @@ module.exports.processInputFiles = function (params) {
                     return  loanItem;
                 });
             }
-
             let  otherPropertyKeys = Object.keys(propertyFinanceData).filter(item => item !== 'property' && item !== 'financial');
             loanCollections = loanCollections.map(function (loanItem) {
                 otherPropertyKeys.forEach(function (keyName) {
@@ -269,8 +235,6 @@ module.exports.processInputFiles = function (params) {
                 });
                 return loanItem;
             });
-
-
             otherPropertyKeys.forEach(function (dataKey) {
                 if(propertyFinanceData[dataKey].length >0 ){
                     if (financialSheetMapper[dataKey] && financialSheetMapper[dataKey].primaryKey){
@@ -330,89 +294,8 @@ module.exports.processInputFiles = function (params) {
 
                 }
             });
-
-
-
-
-
             //console.log(loanCollections[0]);
             resolve({Investments : loanCollections});
         }).catch(ex=> reject(ex));
     });
 };
-
-
-
-
-module.exports.parsePropertyFinancialData= function (file) {
-    return new Promise((resolve, reject) => {
-        let parsedFileContent =  getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
-        excelParserService.parseFinancialBinaryFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: financialSheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
-    });
-};
-
-
-/***
- * Parse the loan tab data   from tsv file
- * @returns {Promise}
- */
-module.exports.parseLoanFile = function (file) {
-    return   new Promise((resolve,  reject) => {
-        let parsedFileContent =  getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
-        let sheetMapper = {
-            "all"  :  { name : "loan" }
-        };
-        excelParserService.parseBinaryFile(contentPath, {isLoanFile: true,jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => {
-
-            if(Array.isArray(refDataTable.loan)){
-                refDataTable.loan = refDataTable.loan.map(function (loanItem) {
-
-                        let newLoanItem = _.pick(loanItem,  'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
-
-                        newLoanItem.loanSetUp = [sortKeys(loanItem, {  deep: true})];
-
-                        return newLoanItem;
-                });
-            }
-            resolve(refDataTable.loan);
-
-        }).catch(err => reject(err));
-    });
-};
-
-
-module.exports.parseLperFile = function (file) {
-    return   new Promise((resolve,  reject) => {
-
-        let parsedFileContent =  getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
-        let sheetMapper = {
-            "all"  :  { name : "iprs" }
-        };
-        excelParserService.parseLperFile(contentPath, {jsonDataKeys: jsonDataKeys,  sheetMapper: sheetMapper}).then((refDataTable) => resolve(refDataTable)).catch(err => reject(err));
-    });
-};
-
-
-
-function getColumnAlphabetIndex (val) {
-    var base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', i, j, result = 0;
-    for (i = 0, j = val.length - 1; i < val.length; i += 1, j -= 1) {
-        result += Math.pow(base.length, j) * (base.indexOf(val[i]) + 1);
-    }
-    return result -1;
-}
-
-
-function getFileFromBas64String(fileText) {
-    let bas64Marker = ";base64,";
-    let bas64MarkerIndex = fileText.indexOf(bas64Marker);
-    let rawBase64String  =  fileText.substring(bas64MarkerIndex+bas64Marker.length);
-    let contentType = fileText.substring(0, bas64MarkerIndex).replace(/^data:/,'');
-    return {
-        fileType: contentType,
-        base64String : rawBase64String
-    };
-}
