@@ -14,10 +14,9 @@ exports.init =  function(options, callback) {
 
 exports.run =   function(taskName, file, params, callback) {
     let  startTime = Date.now();
-    console.log(`Process started is pid: ${process.pid}`);
+    console.log(`Process started as pid: ${process.pid}`);
 
     let  _methodName = taskName  === 'financialParse' ?  '_processFinancialFile': '';
-
     switch  (taskName){
         case 'parseLoanFile' :  _methodName = 'parseLoanFile';
             break;
