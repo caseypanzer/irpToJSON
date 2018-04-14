@@ -158,7 +158,12 @@ function getNumWorkers() {
         return parseInt(process.env.M_WORKERS, 10);
     }
 
-    let cores = os.cpus().length;
+    let cores;
+    try {
+        cores = require('physical-cpu-count');
+    } catch (err) {
+        cores = os.cpus().length;
+    }
 
    // console.log('cores', cores);
     return cores || 1;
