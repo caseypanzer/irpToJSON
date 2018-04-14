@@ -26,18 +26,8 @@ module.exports.upload = function (req, res, params, next) {
            // next(new Error('Test  Error'));
 
             console.log('Total time required ', Date.now() - timseStart, 'ms');
-
+            _cleanMemory();
             res.json(investmentJson);
-            setImmediate(() => {
-                try {
-                    global.gc();
-                } catch (e) {
-                    console.log("You must run program with 'node --expose-gc index.js' or 'npm start'");
-
-                }
-                loanFile.path  && fs.unlinkSync(loanFile.path);
-                serviceFile.path && fs.unlinkSync(serviceFile.path);
-            });
         }).catch(err => {
             console.log('Error occurred ',  err);
             setImmediate(() => {
@@ -51,3 +41,14 @@ module.exports.upload = function (req, res, params, next) {
     }
 
 };
+
+
+function _cleanMemory() {
+    setImmediate(() => {
+        try {
+            global.gc();
+        } catch (e) {
+            console.log("You must run program with 'node --expose-gc index.js' or 'npm start'");
+        }
+    });
+}

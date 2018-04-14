@@ -121,7 +121,6 @@ function _cleanMemory() {
             global.gc();
         } catch (e) {
             console.log("You must run program with 'node --expose-gc index.js' or 'npm start'");
-            process.exit();
         }
     });
 }
