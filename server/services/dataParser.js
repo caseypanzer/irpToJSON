@@ -8,7 +8,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const sortKeys = require('sort-keys');
 const jsonDataKeys = require('../input-files/keyNames.json');
-const excelParserService = require('./excelParserService');
 
 Object.keys(jsonDataKeys).forEach(function(keyName) {
     if (Array.isArray(jsonDataKeys[keyName])) {
@@ -17,7 +16,7 @@ Object.keys(jsonDataKeys).forEach(function(keyName) {
 });
 
 let mWorkerFarm = require('../lib/mWorkerFarm');
-let financialParserWorker = mWorkerFarm.getShared({ workerPath: './financialParserWorker', maxConcurrentWorkers: 4 });
+let financialParserWorker = mWorkerFarm.getShared({ workerPath: './financialParserWorker' });
 
 const financialSheetMapper = {
     property: { name: 'property' },
