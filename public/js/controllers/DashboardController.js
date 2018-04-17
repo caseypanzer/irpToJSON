@@ -244,6 +244,7 @@
                 $ctrl.totalNumberOfInvestment = 0;
                 $ctrl.totalNumberOfAsset = 0;
                 $ctrl.errorMsgLog = undefined;
+                $ctrl.showErrorMsgLog = false;
 
                 getBase64($ctrl.loanFile)
                     .then(res => {
