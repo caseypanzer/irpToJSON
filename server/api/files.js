@@ -13,7 +13,7 @@ module.exports.upload = function (req, res, params, next) {
 
     let loanFile, serviceFile, lperFile;
     if(params.loanFile && params.serviceFile){
-         loanFile   = decodeURIComponent(params.loanFile); //new  Buffer(params.loanFile, 'base64');
+         loanFile   = params.loanFile.map(file=>decodeURIComponent(file)); //new  Buffer(params.loanFile, 'base64');
          serviceFile = params.serviceFile.map((_serviceFile)=> decodeURIComponent(_serviceFile));
     }
 

@@ -32,12 +32,19 @@ module.exports.processInputFiles = async function(params) {
         }
         let _innerPromises = [];
 
-        _innerPromises.push(
-            financialParserWorker.run('parseLoanFile', loanFile, { isLoanFile: true }).then(loans => {
-                loanCollections = loans;
-                return { loanData: loans };
-            })
-        );
+        loanFile.map(function (__loanFile) {
+            _innerPromises.push(
+                financialParserWorker.run('parseLoanFile', __loanFile, { isLoanFile: true }).then(loans => {
+                    if(Array.isArray(loans)){
+                        loans.map((_loan)=>{
+                            loanCollections.push(_loan);
+                        });
+                    }
+                    return { loanData: loans };
+                })
+            );
+        });
+
 
         serviceFile.map(file =>
             _innerPromises.push(

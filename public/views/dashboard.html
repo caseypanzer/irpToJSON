@@ -8,11 +8,11 @@
           Upload CREFC Loan Setup File for single securitization
         </div>
         <div class="col-perc-30 ta-center">
-          <div class="text-success">&nbsp;{{$ctrl.loanFile.name}}</div>
+          <div class="text-success" ng-repeat="loanFile in $ctrl.loanFile track by $index">&nbsp;{{ loanFile.name }}</div>
         </div>
         <div class="col-perc-30">
             <div ngf-select ng-model="$ctrl.loanFilePlaceHolder" class="drop-box"
-                 ngf-drag-over-class="'dragover'" ngf-drop ngf-multiple="false"
+                 ngf-drag-over-class="'dragover'" ngf-drop ngf-multiple="true"
                  ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: true, debounce: 0}"
                  ngf-pattern="*">
                  <div class="">

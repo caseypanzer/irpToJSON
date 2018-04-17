@@ -27,7 +27,7 @@
             $ctrl.totalNumberOfInvestment = 0;
             $ctrl.totalNumberOfAsset = 0;
 
-            $ctrl.loanFile;
+            $ctrl.loanFile = [];
 
             $ctrl.serviceFile = [];
 
@@ -55,8 +55,12 @@
             $scope.$watch('$ctrl.loanFilePlaceHolder', function(newVal, oldVal) {
                 if (newVal !== oldVal) {
                     if (newVal) {
-                        $ctrl.loanFile = newVal;
-                        setTimeout(checkAndAdjustLoanFiles, 10);
+                        if (newVal && newVal.length > 0) {
+                            newVal.forEach(function(_newFile) {
+                                $ctrl.loanFile.push(_newFile);
+                            });
+                            setTimeout(checkAndAdjustLoanFiles, 10);
+                        }
                     }
                 }
             });
@@ -87,18 +91,29 @@
 
             function checkAndAdjustLoanFiles() {
                 if ($ctrl.loanFile) {
-                    if (/\.txt$/i.test($ctrl.loanFile.name) || /\.csv/i.test($ctrl.loanFile.name)) {
-                        ModalService.showXlsxImportEditorWizard({ file: $ctrl.loanFile, isLoanFile: true }).then(
-                            function(modifiedFile) {
-                                $ctrl.loanFile = modifiedFile;
-                                $scope.$applyAsync();
-                            },
-                            function(ex) {
-                                console.log(ex);
-                                next(null);
+                    async.eachSeries(
+                        $ctrl.loanFile,
+                        function(file, next) {
+                            if (/\.txt$/i.test(file.name) || /\.csv/i.test(file.name)) {
+                                ModalService.showXlsxImportEditorWizard({ file: file, isLoanFile: true }).then(
+                                    function(modifiedFile) {
+                                        let fIndex = $ctrl.loanFile.findIndex(_file => _file === file);
+                                        $ctrl.loanFile.splice(fIndex, 1, modifiedFile);
+                                        next(null, modifiedFile);
+                                    },
+                                    function(ex) {
+                                        console.log(ex);
+                                        next(null, file);
+                                    }
+                                );
+                            } else {
+                                next(null, file);
                             }
-                        );
-                    }
+                        },
+                        function(files) {
+                            $scope.$applyAsync();
+                        }
+                    );
                 }
             }
 
@@ -113,15 +128,15 @@
                                     function(modifiedFile) {
                                         let fIndex = $ctrl.lperFile.findIndex(_file => _file === file);
                                         $ctrl.lperFile.splice(fIndex, 1, modifiedFile);
-                                        next(modifiedFile);
+                                        next(null, modifiedFile);
                                     },
                                     function(ex) {
                                         console.log(ex);
-                                        next(file);
+                                        next(null, file);
                                     }
                                 );
                             } else {
-                                next(file);
+                                next(null, file);
                             }
                         },
                         function(files) {
@@ -246,7 +261,15 @@
                 $ctrl.errorMsgLog = undefined;
                 $ctrl.showErrorMsgLog = false;
 
-                getBase64($ctrl.loanFile)
+                let loanFilePromises = [];
+
+                if (Array.isArray($ctrl.loanFile)) {
+                    $ctrl.loanFile.forEach(function(__file) {
+                        loanFilePromises.push(getBase64(__file));
+                    });
+                }
+
+                Promise.all(loanFilePromises)
                     .then(res => {
                         loanText = res;
                         let _promises = [];
