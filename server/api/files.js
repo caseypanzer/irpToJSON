@@ -24,9 +24,12 @@ module.exports.upload = function (req, res, params, next) {
     if (loanFile && serviceFile){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile, lperFile: lperFile}).then(function (investmentJson) {
            // next(new Error('Test  Error'));
-
+            params  = null;
+            loanFile    = null;
+            serviceFile = null;
+            lperFile    = null;
             console.log('Total time required ', Date.now() - timseStart, 'ms');
-            _cleanMemory();
+            //_cleanMemory();
             res.json(investmentJson);
         }).catch(err => {
             console.log('Error occurred ',  err);

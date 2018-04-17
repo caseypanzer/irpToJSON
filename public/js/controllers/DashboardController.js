@@ -24,6 +24,9 @@
 
             window.myCtrl = $ctrl;
 
+            $ctrl.totalNumberOfInvestment = 0;
+            $ctrl.totalNumberOfAsset = 0;
+
             $ctrl.loanFile;
 
             $ctrl.serviceFile = [];
@@ -238,6 +241,9 @@
                 $ctrl.sumittingFiles = true;
                 $ctrl.investments = undefined;
                 $.jstree.destroy();
+                $ctrl.totalNumberOfInvestment = 0;
+                $ctrl.totalNumberOfAsset = 0;
+                $ctrl.errorMsgLog = undefined;
 
                 getBase64($ctrl.loanFile)
                     .then(res => {
@@ -280,9 +286,13 @@
                             contentType: 'application/json; charset=UTF-8',
                             data: JSON.stringify(requestParams),
                             success: function(resp) {
-                                // console.log(resp);
+                                //console.log(resp);
                                 $ctrl.investments = resp.Investments;
+                                let errors =  resp.errors;
+                                $ctrl.totalNumberOfInvestment = _.size(resp.Investments);
+                                $ctrl.totalNumberOfAsset = 0;
                                 $ctrl.treeJsonData = InvestmentTreeHelper.buildTree(resp.Investments);
+
                                 $('#investmentTreeView').jstree({
                                     core: {
                                         data: {
@@ -293,6 +303,33 @@
                                     }
                                 });
                                 $ctrl.sumittingFiles = false;
+                                $ctrl.totalNumberOfAsset = $ctrl.investments.reduce(function (memo, current) {
+                                    if(current && Array.isArray(current.properties)){
+                                        memo += _.size(current.properties);
+                                    }
+                                    return memo;
+                                }, 0);
+
+                                if(errors && errors.length > 0){
+                                    let inputArr = [];
+                                    let errorGroupByType=_.groupBy(errors, 'type');
+                                    _.sortBy(Object.keys(errorGroupByType)).forEach(function (keyName) {
+                                        if(inputArr.length > 0){
+                                            inputArr.push(` `);
+                                        }
+                                        inputArr.push(` Error type ${keyName} `);
+                                        inputArr.push(` `);
+                                        errorGroupByType[keyName].forEach(function (log) {
+                                            inputArr.push(log.message);
+                                        })
+                                    });
+
+                                    if(inputArr.length > 0){
+                                        let errorMsgLog  = inputArr.join('\n');
+                                        $ctrl.errorMsgLog = errorMsgLog;
+                                    }
+
+                                }
                                 $scope.$applyAsync();
                             },
                             error: function(resp) {

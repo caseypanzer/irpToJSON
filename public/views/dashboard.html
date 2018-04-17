@@ -12,7 +12,7 @@
         </div>
         <div class="col-perc-30">
             <div ngf-select ng-model="$ctrl.loanFilePlaceHolder" class="drop-box"
-                 ngf-drag-over-class="'dragover'"ngf-drop ngf-multiple="false"
+                 ngf-drag-over-class="'dragover'" ngf-drop ngf-multiple="false"
                  ngf-model-options="{updateOn: 'change click drop dropUrl paste', allowInvalid: true, debounce: 0}"
                  ngf-pattern="*">
                  <div class="">
@@ -100,10 +100,7 @@
                   ng-click="$ctrl.uploadFiles()"><span ng-if="!$ctrl.sumittingFiles">Consolidate</span><span
                   ng-if="$ctrl.sumittingFiles">  Consolidating <tiny-spinner></tiny-spinner></span>
           </button>
-
             <button class="btn btn-primary col-perc-50 pull-right"  href="javascript:void(0)" ng-click="$ctrl.downloadJson()"> Download File</button>
-
-
         </div>
       </div>
     </div>
@@ -111,6 +108,16 @@
 
   <h3>Consolidated Output</h3>
   <hr>
+  <div>
+    <span class="pull-left" ng-if="$ctrl.totalNumberOfInvestment > 0">Total # of Investment <strong>{{ $ctrl.totalNumberOfInvestment }}</strong></span>
+    <br>
+    <span class="pull-left" ng-if="$ctrl.totalNumberOfAsset > 0">Total # of Asset <strong>{{ $ctrl.totalNumberOfAsset }}</strong></span>
+  </div>
   <div class="row clearfix margin-top-20" id="investmentTreeView">
+  </div>
+
+  <div class="row" ng-if="$ctrl.errorMsgLog">
+    <button class="btn btn-link pull-right"  ng-click="$ctrl.showErrorMsgLog = !$ctrl.showErrorMsgLog"> <span ng-if="$ctrl.showErrorMsgLog">Hide Error Log</span><span ng-if="!$ctrl.showErrorMsgLog">Show Error Log</span> </button>
+    <textarea ng-if="$ctrl.showErrorMsgLog"  rows="10"  class="form-control col-perc-100 pull-right">{{ $ctrl.errorMsgLog }}</textarea>
   </div>
 </div>

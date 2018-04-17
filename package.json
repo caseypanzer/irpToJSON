@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "node_modules/.bin/webpack --config webpack.config.js  --progress true   --color true",
-    "start": "node --nouse-idle-notification --expose-gc  app.js"
+    "start": "node --nouse-idle-notification  app.js"
   },
   "author": "sajib sarkar",
   "license": "ISC",

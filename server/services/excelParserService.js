@@ -9,7 +9,6 @@ const XLSX     = require('xlsx');
 const lperFileParserService = require('./lperFileParserService');
 const moment = require('moment');
 
-
 /***
  * Effecttively parse  the  excel file and  map to the supplied columns
  * @param contentPath
@@ -93,14 +92,14 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                         let worksheet = workbook.Sheets[sheetName];
                         if (worksheet) {
                             let nickName =  sheetMapper[checkResultPropertyName] ? _.camelCase(sheetMapper[checkResultPropertyName].name) : (sheetMapper.all && sheetMapper.all.name? _.camelCase(sheetMapper.all.name) : 'data');
-                            tableData[nickName] = [];
+                            if(!tableData[nickName] || !Array.isArray(tableData[nickName])){
+                                tableData[nickName] = [];
+                            }
                             let refDataTable = tableData[nickName];
                             let dataByRowIndex = _getDataByRow(worksheet);
-
                             if(sheetMapper[checkResultPropertyName] && sheetMapper[checkResultPropertyName].isHeaderRowExists){
                                 //console.log(sheetName, jsonDataKeys[sheetName.toLowerCase()]);
                                 let jsonKeyMap = jsonDataKeys[checkResultPropertyName];
-
                                 let headersIndex = [];
                                 if (jsonKeyMap){
 
@@ -182,6 +181,8 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
                     }
                 });
             }
+            console.log('property length', tableData['property'].length);
+            console.log('financial length', tableData['financial'].length);
             resolve(tableData);
         });
 };

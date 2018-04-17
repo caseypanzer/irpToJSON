@@ -4,7 +4,19 @@
 require('v8-compile-cache');
 const sortKeys = require('sort-keys');
 const _ = require('lodash');
+const jsonDataKeys = require('../input-files/keyNames.json');
+
+Object.keys(jsonDataKeys).forEach(function(keyName) {
+    if (Array.isArray(jsonDataKeys[keyName])) {
+        jsonDataKeys[keyName] = jsonDataKeys[keyName].map(item => _.camelCase(item));
+    }
+});
+
+
+const financialSheetMapper  = require('../financialSheetMap').financialSheetMapper;
+
 let excelParserService = require('../services/excelParserService');
+
 
 exports.init = function(options, callback) {
     Object.assign(process.env, options.env || {});
@@ -35,12 +47,12 @@ exports.run = function(taskName, file, params, callback) {
         .call(null, file, params)
         .then(results => {
             console.log(`pid: ${process.pid} took time`, Date.now() - startTime);
-            _cleanMemory();
+            //_cleanMemory();
             callback(null, results);
         })
         .catch(err => {
             console.log(err);
-            _cleanMemory();
+            //_cleanMemory();
             callback(err);
         });
 };
@@ -49,23 +61,24 @@ exports.run = function(taskName, file, params, callback) {
  * Parse the loan tab data   from tsv file
  * @returns {Promise}
  */
-module.exports.parseLoanFile = function(file, params) {
+module.exports.parseLoanFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
         let parsedFileContent = getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
         let sheetMapper = {
             all: { name: 'loan' }
         };
+        params.sheetMapper = sheetMapper;
+        params.jsonDataKeys = jsonDataKeys;
         //  console.log('contentPath', contentPath);
         excelParserService
             .parseBinaryFile(contentPath, params)
             .then(refDataTable => {
+
                 if (Array.isArray(refDataTable.loan)) {
                     refDataTable.loan = refDataTable.loan.map(function(loanItem) {
                         let newLoanItem = _.pick(loanItem, 'transactionId', 'groupId', 'loanId', 'prospectusLoanId', 'propertyName', 'propertyAddress', 'propertyCity', 'propertyState', 'propertyZipCode', 'propertyCounty', 'propertyType');
-
                         newLoanItem.loanSetUp = [sortKeys(loanItem, { deep: true })];
-
                         return newLoanItem;
                     });
                 }
@@ -77,17 +90,19 @@ module.exports.parseLoanFile = function(file, params) {
     });
 };
 
-exports._processFinancialFile = function(file, params) {
+exports._processFinancialFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
         let parsedFileContent = getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
+        params.jsonDataKeys = jsonDataKeys;
+        params.sheetMapper = financialSheetMapper;
         excelParserService.parseFinancialBinaryFile(contentPath, params).then(data => resolve(data))
             .catch(err => reject(err));
     });
 
 };
 
-module.exports.parseLperFile = function(file, params) {
+module.exports.parseLperFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
         let parsedFileContent = getFileFromBas64String(file);
         let contentPath = parsedFileContent.base64String;
@@ -95,6 +110,7 @@ module.exports.parseLperFile = function(file, params) {
             all: { name: 'iprs' }
         };
         params.sheetMapper = sheetMapper;
+        params.jsonDataKeys = jsonDataKeys;
         excelParserService
             .parseLperFile(contentPath, params)
             .then(refDataTable => resolve(refDataTable))
