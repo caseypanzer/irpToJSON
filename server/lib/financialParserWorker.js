@@ -83,7 +83,7 @@ module.exports.parseLoanFile = function(file, params = {}) {
                     });
                 }
                 //console.log('refDataTable.loan', refDataTable.loan);
-                refDataTable.loan = refDataTable.loan.filter(loanItem => loanItem && loanItem.loanId && loanItem.loanId.length > 4 && loanItem.loanId !== 'Loan Id');
+                refDataTable.loan = refDataTable.loan.filter(loanItem => loanItem && loanItem.loanId && loanItem.loanId.length > 4 && _.camelCase(loanItem.loanId) !== 'loanId');
                 resolve(refDataTable.loan);
             })
             .catch(err => reject(err));
