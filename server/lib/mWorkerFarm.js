@@ -154,6 +154,9 @@ for (let key in EventEmitter.prototype) {
 }
 
 function getNumWorkers() {
+    //temporarily returns  1 to avoid the  memory  issue
+    return  1;
+
     if (process.env.M_WORKERS) {
         return parseInt(process.env.M_WORKERS, 10);
     }
