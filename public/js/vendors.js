@@ -21,7 +21,6 @@ window.Buffer = require('buffer/').Buffer;
 window.XLSX = require('xlsx');
 
 require('jstree');
-
 require('bootstrap/dist/css/bootstrap.min.css');
 require('angular-toastr/dist/angular-toastr.css');
 require('ionicons/dist/css/ionicons.css');

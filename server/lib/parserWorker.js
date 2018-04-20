@@ -2,8 +2,9 @@
  * Created by sajibsarkar on 4/11/18.
  */
 require('v8-compile-cache');
-const sortKeys = require('sort-keys');
 const _ = require('lodash');
+const path = require('path');
+const sortKeys = require('sort-keys');
 const jsonDataKeys = require('../input-files/keyNames.json');
 
 Object.keys(jsonDataKeys).forEach(function(keyName) {
@@ -63,8 +64,7 @@ exports.run = function(taskName, file, params, callback) {
  */
 module.exports.parseLoanFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
-        let parsedFileContent = getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
+        file.path =  path.join(__dirname, '../../',file.path);
         let sheetMapper = {
             all: { name: 'loan' }
         };
@@ -72,7 +72,7 @@ module.exports.parseLoanFile = function(file, params = {}) {
         params.jsonDataKeys = jsonDataKeys;
         //  console.log('contentPath', contentPath);
         excelParserService
-            .parseBinaryFile(contentPath, params)
+            .parseBinaryFile(file, params)
             .then(refDataTable => {
 
                 if (Array.isArray(refDataTable.loan)) {
@@ -92,11 +92,10 @@ module.exports.parseLoanFile = function(file, params = {}) {
 
 exports._processFinancialFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
-        let parsedFileContent = getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
+        file.path =  path.join(__dirname, '../../',file.path);
         params.jsonDataKeys = jsonDataKeys;
         params.sheetMapper = financialSheetMapper;
-        excelParserService.parseFinancialBinaryFile(contentPath, params).then(data => resolve(data))
+        excelParserService.parseFinancialBinaryFile(file, params).then(data => resolve(data))
             .catch(err => reject(err));
     });
 
@@ -104,15 +103,13 @@ exports._processFinancialFile = function(file, params = {}) {
 
 module.exports.parseLperFile = function(file, params = {}) {
     return new Promise((resolve, reject) => {
-        let parsedFileContent = getFileFromBas64String(file);
-        let contentPath = parsedFileContent.base64String;
-        let sheetMapper = {
+        file.path =  path.join(__dirname, '../../',file.path);
+        params.sheetMapper  =  {
             all: { name: 'iprs' }
         };
-        params.sheetMapper = sheetMapper;
         params.jsonDataKeys = jsonDataKeys;
         excelParserService
-            .parseLperFile(contentPath, params)
+            .parseLperFile(file, params)
             .then(refDataTable => resolve(refDataTable))
             .catch(err => reject(err));
     });

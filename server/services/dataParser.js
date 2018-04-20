@@ -10,18 +10,99 @@ const sortKeys = require('sort-keys');
 const financialSheetMapper  = require('../financialSheetMap').financialSheetMapper;
 
 let mWorkerFarm = require('../lib/mWorkerFarm');
-let financialParserWorker = mWorkerFarm.getShared({ workerPath: './financialParserWorker' });
+let financialParserWorker = mWorkerFarm.getShared({ workerPath: './parserWorker' });
 
+
+function _buildPropertyData(financialData, propertyData) {
+    if (Array.isArray(financialData)) {
+        financialData = financialData.map(function (item) {
+            if (item.startDate && !moment.isDate(item.startDate)) {
+                item.startDate = moment(item.startDate, 'YYYYMMDD').toDate();
+            }
+            if (item.endDate && !moment.isDate(item.endDate)) {
+                item.endDate = moment(item.endDate, 'YYYYMMDD').toDate();
+            }
+            return item;
+        });
+
+        let financialGroupedData = _.groupBy(financialData, function (item) {
+            return _.trim(item.propertyId);
+        });
+
+        // console.log('financialGroupedData', financialGroupedData);
+        if (Array.isArray(propertyData)) {
+            propertyData = propertyData.map(function (propertyItem) {
+                if (propertyItem.distributionDate) {
+                    propertyItem.distributionDate = moment(propertyItem.distributionDate, 'YYYYMMDD').toDate();
+                }
+                let foreignKey = _.trim(propertyItem.propertyId);
+                if (financialGroupedData[foreignKey]) {
+                    let financialDataRows = financialGroupedData[foreignKey];
+                    if (Array.isArray(financialDataRows)) {
+                        let _financialDataGrouped = _.groupBy(financialDataRows, function (item) {
+                            return [item.startDate, item.endDate].join('##');
+                        });
+
+                        let groupedKeys = Object.keys(_financialDataGrouped);
+                        groupedKeys = _.sortBy(groupedKeys, function (item) {
+                            let splittedDate = item.split('##');
+                            if (splittedDate.length > 0) {
+                                return new Date(item.split('##')[0]).getTime();
+                            }
+                            return 0;
+                        });
+
+                        groupedKeys.forEach(function (keyItem) {
+                            let newFinancialItem = {
+                                lineItems: {}
+                            };
+                            let lineItems = [];
+                            let splittedItem = keyItem.split('##');
+                            newFinancialItem.startDate = splittedItem[0];
+                            newFinancialItem.endDate = splittedItem[1];
+                            _financialDataGrouped[keyItem].forEach(function (__item) {
+                                lineItems.push(__item);
+                                if (__item.propertyId && !newFinancialItem.propertyId) {
+                                    newFinancialItem.propertyId = __item.propertyId;
+                                }
+                            });
+
+                            let newLineItem = {};
+                            let lineItemsByStmtType = _.groupBy(lineItems, 'stmtType');
+                            for (let stmtTyeKey in lineItemsByStmtType) {
+                                newLineItem[stmtTyeKey] = lineItemsByStmtType[stmtTyeKey];
+                            }
+                            newFinancialItem.lineItems = newLineItem;
+
+                            // console.log('lineItems', newFinancialItem.lineItems);
+                            // newFinancialItem.lineItems = lineItems;
+                            if (!propertyItem.financials) {
+                                propertyItem.financials = [];
+                            }
+                            propertyItem.financials.push(_.pick(newFinancialItem, 'startDate', 'endDate', 'propertyId', 'lineItems'));
+                        });
+                    }
+                }
+
+                if (!propertyItem.financials) {
+                    propertyItem.financials = [];
+                }
+                return propertyItem;
+            });
+        }
+    }
+    return propertyData;
+}
 
 module.exports.processInputFiles = async function(params) {
     return new Promise((resolve, reject) => {
-        let { loanFile, serviceFile, lperFile } = params;
 
+        let { loanFile, serviceFile, lperFile } = params;
         let errors = [];
         let loanCollections = [];
-        let propertyFinanceData,
-            propertyData,
-            financialData,
+        let propertyFinanceData = [],
+            propertyData= [],
+            financialData =[],
             lperData = [];
 
         if (!loanFile) {
@@ -30,6 +111,7 @@ module.exports.processInputFiles = async function(params) {
         if (!serviceFile) {
             return reject(new Error('serviceFile parameter is missing'));
         }
+
         let _innerPromises = [];
 
         loanFile.map(function (__loanFile) {
@@ -74,7 +156,6 @@ module.exports.processInputFiles = async function(params) {
                 loanFile = null;
                 serviceFile=null;
                 lperFile=null;
-
                 let allFinanceData = {};
                 if (Array.isArray(dataCollection)) {
                     dataCollection.forEach(function(_financeData) {
@@ -102,84 +183,7 @@ module.exports.processInputFiles = async function(params) {
             })
             .then(__propertyFinanceData => {
                 let propertyGroupData, __propertyDataMap, __lperDataMap;
-
-                if (Array.isArray(financialData)) {
-                    financialData = financialData.map(function(item) {
-                        if (item.startDate && !moment.isDate(item.startDate)) {
-                            item.startDate = moment(item.startDate, 'YYYYMMDD').toDate();
-                        }
-                        if (item.endDate && !moment.isDate(item.endDate)) {
-                            item.endDate = moment(item.endDate, 'YYYYMMDD').toDate();
-                        }
-                        return item;
-                    });
-
-                    let financialGroupedData = _.groupBy(financialData, function(item) {
-                        return _.trim(item.propertyId);
-                    });
-
-                    // console.log('financialGroupedData', financialGroupedData);
-                    if (Array.isArray(propertyData)) {
-                        propertyData = propertyData.map(function(propertyItem) {
-                            if (propertyItem.distributionDate) {
-                                propertyItem.distributionDate = moment(propertyItem.distributionDate, 'YYYYMMDD').toDate();
-                            }
-                            let foreignKey = _.trim(propertyItem.propertyId);
-                            if (financialGroupedData[foreignKey]) {
-                                let financialDataRows = financialGroupedData[foreignKey];
-                                if (Array.isArray(financialDataRows)) {
-                                    let _financialDataGrouped = _.groupBy(financialDataRows, function(item) {
-                                        return [item.startDate, item.endDate].join('##');
-                                    });
-
-                                    let groupedKeys = Object.keys(_financialDataGrouped);
-                                    groupedKeys = _.sortBy(groupedKeys, function(item) {
-                                        let splittedDate = item.split('##');
-                                        if (splittedDate.length > 0) {
-                                            return new Date(item.split('##')[0]).getTime();
-                                        }
-                                        return 0;
-                                    });
-
-                                    groupedKeys.forEach(function(keyItem) {
-                                        let newFinancialItem = {
-                                            lineItems: {}
-                                        };
-                                        let lineItems = [];
-                                        let splittedItem = keyItem.split('##');
-                                        newFinancialItem.startDate = splittedItem[0];
-                                        newFinancialItem.endDate = splittedItem[1];
-                                        _financialDataGrouped[keyItem].forEach(function(__item) {
-                                            lineItems.push(__item);
-                                            if (__item.propertyId && !newFinancialItem.propertyId) {
-                                                newFinancialItem.propertyId = __item.propertyId;
-                                            }
-                                        });
-
-                                        let newLineItem = {};
-                                        let lineItemsByStmtType = _.groupBy(lineItems, 'stmtType');
-                                        for (let stmtTyeKey in lineItemsByStmtType) {
-                                            newLineItem[stmtTyeKey] = lineItemsByStmtType[stmtTyeKey];
-                                        }
-                                        newFinancialItem.lineItems = newLineItem;
-
-                                        // console.log('lineItems', newFinancialItem.lineItems);
-                                        // newFinancialItem.lineItems = lineItems;
-                                        if (!propertyItem.financials) {
-                                            propertyItem.financials = [];
-                                        }
-                                        propertyItem.financials.push(_.pick(newFinancialItem, 'startDate', 'endDate', 'propertyId', 'lineItems'));
-                                    });
-                                }
-                            }
-
-                            if (!propertyItem.financials) {
-                                propertyItem.financials = [];
-                            }
-                            return propertyItem;
-                        });
-                    }
-                }
+                propertyData = _buildPropertyData(financialData, propertyData);
 
                 if (Array.isArray(lperData)) {
                     __lperDataMap = _.groupBy(lperData, function(item) {
@@ -222,13 +226,15 @@ module.exports.processInputFiles = async function(params) {
                 }
 
                 let loansMapByLoanId = _.groupBy(loanCollections, item=> _.trim(item.loanId));
-                propertyData.map(function (_propertyItem) {
-                    if(_propertyItem &&  _propertyItem.loanId && _.toLower(_propertyItem.loanId) !== 'loan id'){
-                        if(!loansMapByLoanId[_.trim(_propertyItem.loanId)]){
-                            errors.push({type:'investment', message: `There was no Investment data available for the asset data with loanId ${_propertyItem.loanId}`});
+                if(Array.isArray(propertyData)){
+                    propertyData.map(function (_propertyItem) {
+                        if(_propertyItem &&  _propertyItem.loanId && _.toLower(_propertyItem.loanId) !== 'loan id'){
+                            if(!loansMapByLoanId[_.trim(_propertyItem.loanId)]){
+                                errors.push({type:'investment', message: `There was no Investment data available for the asset data with loanId ${_propertyItem.loanId}`});
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
                 loansMapByLoanId = undefined;
 

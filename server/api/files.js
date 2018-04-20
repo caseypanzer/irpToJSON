@@ -7,21 +7,28 @@ var  _ = require('lodash');
 var fs = require('fs');
 var dataParser = require('../services/dataParser');
 
+
+
 module.exports.upload = function (req, res, params, next) {
 
     let timseStart = Date.now();
+    let loanFile= [], serviceFile =[], lperFile=[];
 
-    let loanFile, serviceFile, lperFile;
-    if(params.loanFile && params.serviceFile){
-         loanFile   = params.loanFile.map(file=>decodeURIComponent(file)); //new  Buffer(params.loanFile, 'base64');
-         serviceFile = params.serviceFile.map((_serviceFile)=> decodeURIComponent(_serviceFile));
+    if(req.files &&  Array.isArray(req.files)){
+        req.files.map(function (_file) {
+            if(/^loanFile/.test(_file.fieldname)){
+                loanFile.push(_file);
+            } else if(/^serviceFile/.test(_file.fieldname)){
+                serviceFile.push(_file);
+            } else if(/^lperFile/.test(_file.fieldname)){
+                lperFile.push(_file);
+            }
+        });
+
+
     }
 
-    if(params.lperFile){
-        lperFile = params.lperFile.map((_lperFile)=> decodeURIComponent(_lperFile));
-    }
-
-    if (loanFile && serviceFile){
+    if (loanFile.length > 0 && serviceFile.length > 0){
         dataParser.processInputFiles({loanFile: loanFile, serviceFile: serviceFile, lperFile: lperFile}).then(function (investmentJson) {
            // next(new Error('Test  Error'));
             params  = null;
@@ -30,13 +37,11 @@ module.exports.upload = function (req, res, params, next) {
             lperFile    = null;
             console.log('Total time required ', Date.now() - timseStart, 'ms');
             //_cleanMemory();
+            _removeFile(req.files);
             res.json(investmentJson);
         }).catch(err => {
             console.log('Error occurred ',  err);
-            setImmediate(() => {
-                loanFile.path  && fs.unlinkSync(loanFile.path);
-                serviceFile.path && fs.unlinkSync(serviceFile.path);
-            });
+            _removeFile(req.files);
             next(err);
         });
     } else {
@@ -53,5 +58,26 @@ function _cleanMemory() {
         } catch (e) {
             console.log("You must run program with 'node --expose-gc index.js' or 'npm start'");
         }
+    });
+}
+
+
+function _removeFile(allFiles) {
+
+    if(!allFiles){
+        return false;
+    }
+    setImmediate(function () {
+        if(allFiles && !Array.isArray(allFiles)){
+            allFiles = [allFiles];
+        }
+
+        allFiles.map(function (_file) {
+            if (_file && _file.path) {
+                fs.unlink(_file.path, (e) => {
+                    if (e) console.log(e)
+                });
+            }
+        });
     });
 }

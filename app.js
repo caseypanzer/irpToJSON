@@ -20,9 +20,7 @@ const express = require('express'),
     morgan = require('morgan'),
     helmet = require('helmet'),
     multer = require('multer'),
-    upload = multer({dest: "server/uploads/"}),
-    //webpack = require('webpack'),
-    webPackconfig = require('./webpack.config');
+    upload = multer({dest: "./server/uploads/", preservePath:true});
 
 let uploadMiddleWare = upload.fields([{name: 'loanFile', maxCount: 1}, {name: 'serviceFile', maxCount: 1}]);
 
@@ -41,9 +39,9 @@ app.set('port', process.env.PORT || 4444);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(morgan('dev'));
 app.use(compress());
-app.use(bodyParser.urlencoded({limit: '9999kb', type: 'application/x-www-form-urlencoded', extended: true}));
-//app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json({limit: '2000mb', type: 'application/json'}));
+app.use(bodyParser.urlencoded({limit: '100mb', type: 'application/x-www-form-urlencoded', extended: true}));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '10mb', type: 'application/json'}));
 app.use(methodOverride('X-HTTP-Method-Override'));
 
 const webpackOptions = {
@@ -65,7 +63,7 @@ app.use(require('webpack-hot-middleware')(compiler));
 */
 
 
-app.post('/api/files/upload', uploadMiddleWare, function (req, res, next) {
+app.post('/api/files/upload', upload.any(), function (req, res, next) {
     _processApiRequest(req, res, 'files', 'upload', true, next);
 });
 

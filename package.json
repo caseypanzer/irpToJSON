@@ -85,7 +85,7 @@
     "webpack-hot-middleware": "^2.21.0",
     "webpack-merge": "^4.1.1",
     "worker-farm": "^1.6.0",
-    "xlsx": "^0.12.7"
+    "xlsx": "~0.x"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.34",
@@ -111,13 +111,8 @@
     "merge-stream": "^1.0.0",
     "node-sass": "^4.7.2",
     "parcel-bundler": "^1.5.1",
-    "sass-loader": "^6.0.6",
-    "stream-series": "^0.1.1",
-    "style-loader": "^0.19.1",
-    "svg-inline-loader": "^0.8.0",
-    "webfonts-loader": "^4.0.1",
-    "webpack": "^3.8.1",
-    "webpack-cli": "^2.0.9",
+    "webpack": "^3.x",
+    "webpack-cli": "^2.x",
     "webpack-dev-middleware": "^1.12.2",
     "webpack-dev-server": "^2.9.4",
     "webpack-hot-middleware": "^2.21.0",

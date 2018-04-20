@@ -11,11 +11,11 @@ const moment = require('moment');
 
 /***
  * Effecttively parse  the  excel file and  map to the supplied columns
- * @param contentPath
+ * @param file
  * @param jsonDataKeys
  * @returns {Promise}
  */
-module.exports.parseBinaryFile = function (contentPath, params) {
+module.exports.parseBinaryFile = function (file, params) {
     return  new  Promise((resolve, reject) =>  {
         setImmediate(() => {
             let workbook, tableData  =  {};
@@ -26,7 +26,7 @@ module.exports.parseBinaryFile = function (contentPath, params) {
             let sheetMapper =  params.sheetMapper ?  _.cloneDeep(params.sheetMapper) : {};
             let sheetMapperKeys = Object.keys(sheetMapper);
             try {
-                workbook = XLSX.read(contentPath,  {type:'base64', cellDates: true });
+                workbook = XLSX.readFile(file.path,  { type:'binary', cellDates: true });
             } catch(ex){
                 console.log('Error at  parsing excel file content',  ex);
                 return reject(new Error('Unable to parse  the provided file.'))
@@ -60,13 +60,14 @@ module.exports.parseBinaryFile = function (contentPath, params) {
                     }
                 });
             }
+            //console.log('tableData', tableData);
             resolve(tableData);
         });
     });
 };
 
 
-module.exports.parseFinancialBinaryFile = function (contentPath, params) {
+module.exports.parseFinancialBinaryFile = function (file, params) {
     return  new  Promise((resolve, reject) =>  {
             let workbook, tableData  =  {};
             let jsonDataKeys = {};
@@ -76,16 +77,15 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
             let sheetMapper =  params.sheetMapper ?  _.cloneDeep(params.sheetMapper) : {};
             let sheetMapperKeys = Object.keys(sheetMapper);
             try {
-                workbook = XLSX.read(contentPath,  {type:'base64', cellDates: true });
+                workbook = XLSX.readFile(file.path,  {type:'binary', cellDates: true });
             } catch(ex){
                 console.log('Error at  parsing excel file content',  ex);
                 return reject(new Error('Unable to parse  the provided file.'))
             }
 
-            // console.log('workbook.SheetNames', workbook.SheetNames);
+            //console.log('workbook.SheetNames', workbook.SheetNames);
             if (workbook && Array.isArray(workbook.SheetNames)) {
                 workbook.SheetNames.forEach(function (sheetName, index) {
-
                     let checkResult = isSheetAllowed(sheetMapperKeys, sheetName);
                     let checkResultPropertyName = checkResult.propertyName;
                     if (checkResult && checkResult.isAllowed) {
@@ -189,18 +189,15 @@ module.exports.parseFinancialBinaryFile = function (contentPath, params) {
 
 
 
-module.exports.parseLperFile = function (contentPath, params) {
+module.exports.parseLperFile = function (file, params) {
     return  new  Promise((resolve, reject) =>  {
         setImmediate(() => {
             let workbook, tableData  =  {};
             let jsonDataKeys = {};
-            if (params.jsonDataKeys){
-                jsonDataKeys  =  params.jsonDataKeys;
-            }
             let sheetMapper =  params.sheetMapper ?  _.cloneDeep(params.sheetMapper) : {};
             let sheetMapperKeys = Object.keys(sheetMapper);
             try {
-                workbook = XLSX.read(contentPath,  {type:'base64', cellDates: true });
+                workbook = XLSX.readFile(file.path,  { type:'binary', cellDates: true });
             } catch(ex){
                 console.log('Error at  parsing excel file content',  ex);
                 return reject(new Error('Unable to parse  the provided file.'))
@@ -235,6 +232,7 @@ module.exports.parseLperFile = function (contentPath, params) {
 
 
 function hasValidHeaders(_cols, jsonKeyMap) {
+    //console.log('jsonKeyMap', jsonKeyMap);
     let  _hasValidHeader = jsonKeyMap.some(function (item) {
         // console.log('item', item);
         return _cols.map(_colVal=> _.camelCase(_colVal)).indexOf(item) > -1;

@@ -19,7 +19,8 @@
         'InvestmentTreeHelper',
         'AppConstants',
         'ModalService',
-        function($scope, $state, toastr, InvestmentTreeHelper, AppConstants, ModalService) {
+        'Upload',
+        function($scope, $state, toastr, InvestmentTreeHelper, AppConstants, ModalService, Upload) {
             var $ctrl = this;
 
             window.myCtrl = $ctrl;
@@ -250,7 +251,7 @@
                 );
             }
 
-            $ctrl.uploadFiles = function() {
+            $ctrl.uploadFiles1 = function() {
                 let loanText, serviceText;
 
                 $ctrl.sumittingFiles = true;
@@ -364,6 +365,81 @@
                             }
                         });
                     });
+            };
+
+            $ctrl.uploadFiles = function() {
+                let loanText, serviceText;
+
+                $ctrl.sumittingFiles = true;
+                $ctrl.investments = undefined;
+                $.jstree.destroy();
+                $ctrl.totalNumberOfInvestment = 0;
+                $ctrl.totalNumberOfAsset = 0;
+                $ctrl.errorMsgLog = undefined;
+                $ctrl.showErrorMsgLog = false;
+
+                let requestParams = {loanFile: $ctrl.loanFile, serviceFile: $ctrl.serviceFile};
+
+                if ($ctrl.lperFile && $ctrl.lperFile.length > 0) {
+                    requestParams.lperFile = $ctrl.lperFile;
+                }
+
+
+                Upload.upload({
+                    url: AppConstants.FILE_UPLOAD_URI_LOCAL,
+                    data: requestParams
+                }).then(function (resp) {
+                    toastr.success('Files Data has been parsed successfully');
+                    if (resp && resp.data) {
+                        $ctrl.investments = resp.data.Investments;
+                        if(Array.isArray($ctrl.investments)) {
+                            let errors = resp.data.errors;
+                            $ctrl.treeJsonData = InvestmentTreeHelper.buildTree($ctrl.investments);
+                            $('#investmentTreeView').jstree({
+                                core: {
+                                    data: {
+                                        text: 'Investments',
+                                        state: { opened: false },
+                                        children: $ctrl.treeJsonData
+                                    }
+                                }
+                            });
+                            $ctrl.sumittingFiles = false;
+                            $ctrl.totalNumberOfInvestment = _.size($ctrl.investments);
+                            $ctrl.totalNumberOfAsset = $ctrl.investments.reduce(function (memo, current) {
+                                if (current && Array.isArray(current.properties)) {
+                                    memo += _.size(current.properties);
+                                }
+                                return memo;
+                            }, 0);
+                            if (errors && errors.length > 0) {
+                                let inputArr = [];
+                                let errorGroupByType = _.groupBy(errors, 'type');
+                                _.sortBy(Object.keys(errorGroupByType)).forEach(function (keyName) {
+                                    if (inputArr.length > 0) {
+                                        inputArr.push(` `);
+                                    }
+                                    inputArr.push(` Error type ${keyName} `);
+                                    inputArr.push(` `);
+                                    errorGroupByType[keyName].forEach(function (log) {
+                                        inputArr.push(log.message);
+                                    })
+                                });
+                                if (inputArr.length > 0) {
+                                    let errorMsgLog = inputArr.join('\n');
+                                    $ctrl.errorMsgLog = errorMsgLog;
+                                }
+
+                            }
+                        }
+                        $scope.$applyAsync();
+                    }
+                }, function(resp) {
+                        console.log(resp);
+                        toastr.error('Error : ' + resp.status);
+                        $ctrl.sumittingFiles = false;
+                        $scope.$applyAsync();
+                });
             };
 
             $ctrl.downloadJson = function() {
