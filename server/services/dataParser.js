@@ -214,7 +214,18 @@ module.exports.processInputFiles = async function(params) {
                                     loanItem.properties.push(dataItem);
                                 });
                             } else {
-                                errors.push({type:'asset', message: `No asset data was found for the investment data with loanId-prospectusId ${loanForeignKey}`});
+                                // loan prospectus id might  be combined with alphanumeric. Lets check with pure numeric loanProspectusId
+
+                                const _anotherloanForeignKey = [_.trim(loanItem.loanId),  parseInt(_.trim(loanItem.prospectusLoanId))].join('-');
+
+                                if (propertyGroupData && propertyGroupData[_anotherloanForeignKey]) {
+                                    propertyGroupData[_anotherloanForeignKey].forEach(function(dataItem) {
+                                        loanItem.properties.push(dataItem);
+                                    });
+                                } else{
+                                    errors.push({type:'asset', message: `No asset data was found for the investment data with loanId-prospectusId ${loanForeignKey}`});
+                                }
+
                                 //console.log('loan data not found for the  loanForeignKey', loanForeignKey);
                             }
                             if (__lperDataMap && __lperDataMap[loanForeignKey]) {

@@ -9,6 +9,7 @@
 
     var XLSX = require('xlsx');
 
+    
     module.controller('XlsxImportEditorController', [
         '$scope',
         '$state',
