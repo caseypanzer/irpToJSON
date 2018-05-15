@@ -1,0 +1,151 @@
+<div class="dashboard-container">
+    <form name="fileUploadForm">
+      <div class="row">
+        <div class="col-perc-100">
+            <h3>Step 1</h3>
+          <hr>
+        </div>
+        <div class="col-perc-40 large-font">
+          Upload CREFC Loan Setup File for single securitization
+        </div>
+
+        <div class="col-perc-30 ta-center">
+          &nbsp;
+          <div class="text-success" *ngFor="let loanFile of loanFilesConverted$ | async">
+            <small> &nbsp;{{ loanFile.name }}</small>
+          </div>
+        </div>
+        <div class="col-perc-30 float-right">
+          <div   class="well drop-box" ng2FileDrop
+                 (fileOver)="isLoanFileOver =  $event"
+                 (onFileDrop)="onLoanFileSelect()"
+                 [ngClass]="{'dragover': isLoanFileOver}"
+                 [uploader]="loanFileuploader">
+            <div class="">
+              Drop .xls File Here
+            </div>
+            <label  name="upload" class="btn-upload btn btn-primary">
+              <input ng2FileSelect (onFileSelected)="onLoanFileSelect()" [uploader]="loanFileuploader"  multiple type="file"  style="display: none;"/>
+              Select a File From Your Computer</label>
+          </div>
+        </div>
+
+      </div>
+      <div class="row">
+        <div class="col-perc-100">
+          <h3>Step 2</h3>
+          <hr>
+        </div>
+        <div class="col-perc-40 large-font">
+          Upload most recent reporting period IRP files for a single securitization.
+        </div>
+
+        <div class="col-perc-30 ta-center">
+          &nbsp;
+          <div class="text-success" *ngFor="let serviceFile of serviceFilesConverted$ | async">
+            <small> &nbsp;{{ serviceFile.name }}</small>
+          </div>
+        </div>
+        <div class="col-perc-30 float-right">
+          <div   class="well drop-box" ng2FileDrop
+                 (fileOver)="isServiceFileOver =  $event"
+                 (onFileDrop)="onServiceFileSelect()"
+                 [ngClass]="{'dragover': isServiceFileOver}"
+                 [uploader]="serviceFileuploader">
+            <div class="">
+              Drop .xls File Here
+            </div>
+            <label  name="upload" class="btn-upload btn btn-primary">
+              <input ng2FileSelect (onFileSelected)="onServiceFileSelect()" [uploader]="serviceFileuploader"  multiple type="file"  style="display: none;"/>
+              Select a File From Your Computer</label>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row available-service-container">
+        <div class="large-font col-perc-100 ta-center">
+          Required Reports
+        </div>
+        <div class="">
+          <small>Tabs must be named according to CREFC IRP Guidelines. If, after upload, any of the required sections do not appear green, please edit the tab name in your original file and upload the revised file.</small>
+        </div>
+        <div class="col-perc-20"   *ngFor="let tab of serviceFilesAllSheetName$ | async">
+          <div class="alert bordered" [ngClass]="{ 'alert-success': tab.isAvailable }">
+            <small>{{ tab.name }}</small>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col-perc-100">
+          <h3>Step 3</h3>
+          <hr>
+        </div>
+        <div class="col-perc-40 large-font">
+          Upload most recent LPER files for a single securitization.
+        </div>
+
+        <div class="col-perc-30 ta-center">
+          &nbsp;
+          <div class="text-success" *ngFor="let lperFile of lperFilesConverted$ | async">
+            <small> &nbsp;{{ lperFile.name }}</small>
+          </div>
+        </div>
+        <div class="col-perc-30 float-right">
+          <div   class="well drop-box" ng2FileDrop
+                 (fileOver)="isLperFileOver =  $event"
+                 (onFileDrop)="onServiceFileSelect()"
+                 [ngClass]="{'dragover': isLperFileOver}"
+                 [uploader]="lperFileuploader">
+            <div class="">
+              Drop .xls File Here
+            </div>
+            <label  name="upload" class="btn-upload btn btn-primary">
+              <input ng2FileSelect (onFileSelected)="onLperFileSelect()" [uploader]="lperFileuploader"  multiple type="file"  style="display: none;"/>
+              Select a File From Your Computer</label>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="row">
+        <div class="col-perc-100">
+          <h3>Step 4</h3>
+          <hr>
+        </div>
+        <div class="col-perc-40 large-font">
+          Consolidate IRP to Single File Format
+        </div>
+        <div class="col-perc-35 ta-center">
+          &nbsp;
+        </div>
+        <div class="col-perc-25 float-right">
+          <button type="button" class="btn btn-outline-success "
+            (click)="uploadFiles()"><span *ngIf="(processingFile$ | async) === false">Consolidate</span><span
+            *ngIf="processingFile$ | async">  Consolidating <app-tiny-spinner></app-tiny-spinner></span>
+          </button>
+          <button type="button" class="btn btn-outline-primary pull-right"   (click)="downloadJson()"> Download File</button>
+        </div>
+      </div>
+    </form>
+    <h3>Consolidated Output</h3>
+    <hr>
+  <div class="row" *ngIf="(totalNumberOfInvestment$ | async) > 0">
+    <span class="pull-left">Total # of Investment <strong>{{ totalNumberOfInvestment$ | async }}</strong></span>
+  </div>
+  <div class="row" *ngIf="(totalNumberOfAsset$ | async) > 0">
+    <span class="pull-left">Total # of Asset <strong>{{ totalNumberOfAsset$ | async }}</strong></span>
+  </div>
+  <div class="row clearfix margin-top-20">
+    <tree-root id="investmentTreeView" [nodes]="treeJsonData$ | async" [options]="treeOptions"></tree-root>
+  </div>
+
+  <div class="row" *ngIf="errorMsgLog">
+    <button class="btn btn-link pull-right"  (click)="showErrorMsgLog = !showErrorMsgLog"> <span *ngIf="showErrorMsgLog">Hide Error Log</span>
+      <span *ngIf="!showErrorMsgLog">Show Error Log</span> </button>
+      <textarea *ngIf="showErrorMsgLog"  rows="10"  class="form-control col-perc-100 pull-right">{{ errorMsgLog }}</textarea>
+  </div>
+  </div>

@@ -1,0 +1,37 @@
+<div class="modal-header">
+</div>
+<div class="modal-body">
+  <h4  *ngIf="file.name">{{ file.name }} is not in the correct file format (.xlsx). </h4>
+  <div class="instructions">
+    <small>
+    Choose the correct and corresponding sheet name from the dropdown menu below and then click Submit. <br>
+    We take care of the rest!
+    </small>
+  </div>
+  <div class="instructions">
+    <strong><small>We are converting the file into xlsx format.</small></strong>
+  </div>
+  <span  *ngIf="workbook">
+        <div *ngIf="isProcessing">Processing File <app-tiny-spinner></app-tiny-spinner>  </div>
+        <div *ngFor="let sheetName of workbook.SheetNames">
+            <form class="form-inline  margin-left-10 margin-top-10">
+                <div class="form-group">
+                  <label><small>Sheet Name &nbsp;</small> </label>
+                  <select class="form-control margin-left-5" (change)="handleSheetNameChanged(sheetName, sheetNameAlias[sheetName])"
+                          [(ngModel)]="sheetNameAlias[sheetName]"
+                          name="sheetName-{{ sheetName }}" id="sheetName-{{ sheetName }}"
+                          placeholder="Please select sheet name"
+                          required>
+                    <option value="" disabled>Please select sheet name</option>
+                    <option [ngValue]="sheet" *ngFor="let sheet of sheetNameOptions"
+                            [ngClass]="{  'selected': sheet === sheetNameAlias[sheetName]}">{{ sheet }}</option>
+                  </select>
+                </div>
+            </form>
+  </div>
+  </span>
+
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-dark" (click)="submit()">Submit</button>
+</div>
