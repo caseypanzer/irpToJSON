@@ -4,6 +4,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Initial 
 
+Run `npm install -g @angular/cli` to  get the angular-cli toolkit
 Run `npm install` to get the dependencies
 
 ## Build
