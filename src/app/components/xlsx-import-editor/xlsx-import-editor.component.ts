@@ -61,9 +61,14 @@ export class XlsxImportEditorComponent implements OnInit {
         wb.Sheets[aliasName] =  self.workbook.Sheets[sheetName];
       });
 
-      const { modifiedFileName, modifiedFile } = this.xlsxParserHelperService.makeXlsxFile(wb, self.file);
-      this.file = new FileLikeObject(modifiedFile);
-      this.file.name  =  modifiedFileName + '.xlsx';
+      try {
+        const { modifiedFileName, modifiedFile } = this.xlsxParserHelperService.makeXlsxFile(wb, self.file);
+        this.file = new FileLikeObject(modifiedFile);
+        this.file.name  =  modifiedFileName + '.xlsx';
+      } catch (err) {
+        this.toastr.error(err.message);
+      }
+
     }
     this.activeModal.close({file: this.file});
   }
